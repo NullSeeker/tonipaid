@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         greetingName.innerText = savedUser + "!";
         loadFromCloud();
         loginScreen.style.display = 'none';
-        mainApp.style.display = 'flex';
+        mainApp.style.display = 'block';
     } else {
         mainApp.style.display = 'none';
         loginScreen.style.display = 'flex';
