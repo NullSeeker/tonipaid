@@ -1,122 +1,159 @@
+// Import Firebase functions
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// ⚠️ REPLACE THIS OBJECT WITH YOUR CONFIG FROM FIREBASE CONSOLE ⚠️
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase App
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Default User Data
 const defaultData = {
-    isPremium: false, 
+    isGold: false, 
     accounts: {
-        wallet: { balance: 5000, monthlyBudget: 10000 },
-        bank: { balance: 12000, monthlyBudget: 20000 }
+        wallet: { balance: 0 },
+        bank: { balance: 0 }
     },
     transactions: []
 };
 
-let userData;
+let userData = JSON.parse(JSON.stringify(defaultData));
 
-// Load Data
-try {
-    const saved = localStorage.getItem('toniPaidData');
-    userData = saved ? JSON.parse(saved) : defaultData;
-    if (!userData.accounts || !userData.accounts.wallet) userData = defaultData;
-} catch (e) {
-    userData = defaultData;
+// --- FIREBASE DATABASE SYNCING ---
+async function saveToCloud() {
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            await setDoc(doc(db, "users", user.uid), userData);
+        } catch (error) {
+            console.error("Error saving data:", error);
+        }
+    }
 }
 
-function saveData() {
-    localStorage.setItem('toniPaidData', JSON.stringify(userData));
+async function loadFromCloud(user) {
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        userData = docSnap.data();
+    } else {
+        userData = JSON.parse(JSON.stringify(defaultData));
+        await saveToCloud(); 
+    }
+    updateDashboardUI();
+    updateHistoryUI();
 }
 
+// --- UI UPDATE LOGIC ---
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 }
 
-function showToast(message) {
+window.showToast = function(message) {
     const toast = document.getElementById("toast");
     toast.innerText = message;
     toast.classList.add("show");
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
 }
 
-window.togglePremium = function() {
-    userData.isPremium = !userData.isPremium;
-    saveData();
-    updateDashboardUI();
-    closeSidebar();
-    if(userData.isPremium) {
-        showToast("💎 Premium Activated! Camera Scan Unlocked.");
-    } else {
-        showToast("📉 Reverted to Standard User.");
-    }
-};
-
-window.resetAppData = function() {
-    if(confirm("Are you sure you want to reset all data?")) {
-        localStorage.removeItem('toniPaidData');
-        userData = JSON.parse(JSON.stringify(defaultData)); 
-        saveData();
-        updateDashboardUI();
-        updateHistoryUI();
-        closeSidebar();
-        showToast("✅ App data has been reset!");
-    }
-};
-
 function updateDashboardUI() {
-    const walletBar = document.getElementById('wallet-fill');
-    const bankBar = document.getElementById('bank-fill');
-    const walletText = document.getElementById('wallet-balance');
-    const bankText = document.getElementById('bank-balance');
-    const tierLabel = document.getElementById('user-tier-label');
+    document.getElementById('wallet-balance').innerText = formatCurrency(userData.accounts.wallet.balance);
+    document.getElementById('bank-balance').innerText = formatCurrency(userData.accounts.bank.balance);
 
-    tierLabel.innerText = userData.isPremium ? "💎 Premium User" : "Standard User";
-    tierLabel.style.color = userData.isPremium ? "#FFF" : "rgba(255,255,255,0.9)";
+    document.getElementById('user-tier-label').innerText = userData.isGold ? "⭐️ Gold User" : "Standard User";
+    document.getElementById('user-tier-label').style.color = userData.isGold ? "#FFD700" : "rgba(255,255,255,0.9)";
 
-    walletText.innerText = formatCurrency(userData.accounts.wallet.balance);
-    bankText.innerText = formatCurrency(userData.accounts.bank.balance);
+    // Calculate totals for Graph and Emergency Fund
+    let totalIncome = 0;
+    let totalExpenses = 0;
 
-    let walletPercent = (userData.accounts.wallet.balance / userData.accounts.wallet.monthlyBudget) * 100;
-    let bankPercent = (userData.accounts.bank.balance / userData.accounts.bank.monthlyBudget) * 100;
+    userData.transactions.forEach(tx => {
+        if (tx.type === 'in') totalIncome += tx.amount;
+        if (tx.type === 'out') totalExpenses += tx.amount;
+    });
 
-    walletBar.style.width = `${Math.max(0, Math.min(walletPercent, 100))}%`;
-    bankBar.style.width = `${Math.max(0, Math.min(bankPercent, 100))}%`;
+    // 30% Emergency Fund Logic
+    let emergencyFund = totalIncome * 0.30;
+    document.getElementById('emergency-text').innerText = formatCurrency(emergencyFund);
+
+    // If emergency fund is less than 100, notify user
+    if (emergencyFund > 0 && emergencyFund < 100) {
+        showToast("⚠️ Notice: Please put at least a minimum of ₱100 in your Emergency Fund (Misc)!");
+    }
+
+    // Update Graph Heights (Relative to the largest number)
+    let maxGraphValue = Math.max(totalIncome, totalExpenses, 1); 
+    let incomeHeight = (totalIncome / maxGraphValue) * 100;
+    let expenseHeight = (totalExpenses / maxGraphValue) * 100;
+
+    document.getElementById('graph-savings').style.height = `${Math.max(5, incomeHeight)}%`;
+    document.getElementById('graph-expenses').style.height = `${Math.max(5, expenseHeight)}%`;
+}
+
+// History Filters & UI Update
+let currentFilter = 'all';
+
+window.setFilter = function(type) {
+    currentFilter = type;
+    
+    // Update button styling
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    updateHistoryUI();
 }
 
 function updateHistoryUI() {
     const list = document.getElementById('history-list');
     list.innerHTML = ''; 
 
-    if (userData.transactions.length === 0) {
-        list.innerHTML = '<p class="empty-history">No transactions yet.</p>';
+    // Filter the transactions
+    const filteredTx = userData.transactions.filter(tx => {
+        if (currentFilter === 'all') return true;
+        return tx.type === currentFilter;
+    });
+
+    if (filteredTx.length === 0) {
+        list.innerHTML = '<p class="empty-history">No transactions match.</p>';
         return;
     }
 
-    for (let i = userData.transactions.length - 1; i >= 0; i--) {
-        const tx = userData.transactions[i];
+    for (let i = filteredTx.length - 1; i >= 0; i--) {
+        const tx = filteredTx[i];
         const dateObj = new Date(tx.date);
         const dateStr = `${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
         
         const item = document.createElement('div');
         item.className = 'transaction-item';
-        
         const amountClass = tx.type === 'in' ? 'in' : 'out';
         const sign = tx.type === 'in' ? '+' : '-';
-        const accountLabel = tx.account === 'wallet' ? 'Wallet' : 'Bank';
-
+        
         item.innerHTML = `
             <div class="tx-info">
-                <h5>${tx.note} (${accountLabel})</h5>
+                <h5>${tx.note}</h5>
                 <p>${dateStr}</p>
             </div>
-            <div class="tx-amount ${amountClass}">
-                ${sign}${formatCurrency(tx.amount)}
-            </div>
+            <div class="tx-amount ${amountClass}">${sign}${formatCurrency(tx.amount)}</div>
         `;
         list.appendChild(item);
     }
 }
 
 function processTransaction(amount, type, accountType, note) {
-    if (type === 'in') {
-        userData.accounts[accountType].balance += amount;
-    } else if (type === 'out') {
-        userData.accounts[accountType].balance -= amount;
-    }
+    if (type === 'in') userData.accounts[accountType].balance += amount;
+    else userData.accounts[accountType].balance -= amount;
 
     userData.transactions.push({
         date: new Date().toISOString(),
@@ -126,149 +163,176 @@ function processTransaction(amount, type, accountType, note) {
         note: note || "Misc"
     });
 
-    saveData();
+    saveToCloud(); 
     updateDashboardUI();
     updateHistoryUI(); 
 }
 
-window.simulateScan = function() {
-    if (userData.isPremium) {
-        document.getElementById('camera-input').click();
-    } else {
-        document.getElementById('gallery-input').click();
-    }
+// --- GOLD TIER ACTIONS ---
+
+window.toggleGold = function() {
+    userData.isGold = !userData.isGold;
+    saveToCloud();
+    updateDashboardUI();
+    closeSidebar();
+    showToast(userData.isGold ? "⭐️ Gold Activated!" : "📉 Standard User.");
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardUI();
-    updateHistoryUI();
+window.linkBank = function() {
+    if (!userData.isGold) {
+        return showToast("⭐️ Please upgrade to Gold to automatically track bank accounts!");
+    }
+    showToast("🏦 Bank Tracking feature unlocked!");
+};
 
-    // --- LOGIN / LOGOUT LOGIC ---
+window.accessAdvisor = function() {
+    if (!userData.isGold) {
+        return showToast("⭐️ Please upgrade to Gold to access the Financial Advisor!");
+    }
+    showToast("🧑‍💼 Connecting to Financial Advisor...");
+};
+
+window.simulateScan = function() {
+    if (!userData.isGold) {
+        return showToast("⭐️ Please upgrade to Gold to scan receipts!");
+    }
+    document.getElementById('camera-input').click();
+};
+
+// --- REAL AI FILE INPUTS (TESSERACT.JS) ---
+
+async function scanReceiptWithAI(file) {
+    showToast("📸 Reading receipt... Keep the app open (may take 5-10s).");
+    console.log("Starting AI OCR process...");
+    
+    try {
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(file);
+        const text = ret.data.text;
+        await worker.terminate();
+
+        console.log("----- RAW TEXT SEEN BY AI -----");
+        console.log(text);
+        console.log("-------------------------------");
+
+        const amounts = text.match(/\b\d{1,3}(?:[.,]\d{3})*[.,]\d{2}\b/g);
+
+        if (amounts && amounts.length > 0) {
+            console.log("Potential money amounts found:", amounts);
+            
+            const cleanAmounts = amounts.map(str => {
+                let cleanStr = str.replace(/,/g, '');
+                return parseFloat(cleanStr);
+            }).filter(num => !isNaN(num));
+
+            const maxAmount = Math.max(...cleanAmounts);
+            
+            if (maxAmount > 0) {
+                processTransaction(maxAmount, 'out', 'wallet', 'Scanned AI Receipt');
+                showToast(`✅ Success! Found Total: ₱${maxAmount}`);
+                setTimeout(() => { document.getElementById('history-modal').style.display = 'flex'; }, 1000);
+            } else {
+                throw new Error("Found numbers, but none were greater than 0.");
+            }
+        } else {
+            showToast("⚠️ Couldn't find a clear price. Please enter manually.");
+            document.getElementById('tx-note').value = "Unreadable Receipt";
+            document.getElementById('transaction-modal').style.display = 'flex';
+        }
+    } catch (error) {
+        console.error("AI Scanning Error:", error);
+        showToast("⚠️ Error analyzing image. Try a clearer photo.");
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
     const loginScreen = document.getElementById('login-screen');
     const mainApp = document.getElementById('main-app');
-    const btnLogin = document.getElementById('btn-login');
-    const btnLogout = document.getElementById('btn-logout');
     const greetingName = document.getElementById('user-greeting-name');
 
-    btnLogin.addEventListener('click', () => {
-        const user = document.getElementById('login-user').value;
-        const pass = document.getElementById('login-pass').value;
-
-        if (user && pass) {
-            // Set the greeting name dynamically based on email/username input
-            const displayName = user.split('@')[0];
+    // --- FIREBASE AUTHENTICATION LISTENER ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const displayName = user.email.split('@')[0];
             greetingName.innerText = displayName.charAt(0).toUpperCase() + displayName.slice(1) + "!";
             
-            // Fade out login screen
-            loginScreen.style.opacity = '0';
-            setTimeout(() => {
-                loginScreen.style.display = 'none';
-                mainApp.style.display = 'flex'; // Show main app container
-                showToast(`Welcome back, ${displayName}!`);
-            }, 500);
+            loadFromCloud(user).then(() => {
+                loginScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loginScreen.style.display = 'none';
+                    mainApp.style.display = 'flex'; 
+                }, 500);
+            });
         } else {
-            showToast("⚠️ Please enter both username and password.");
+            mainApp.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            setTimeout(() => { loginScreen.style.opacity = '1'; }, 50);
         }
     });
 
-    btnLogout.addEventListener('click', () => {
-        closeSidebar();
-        mainApp.style.display = 'none';
-        loginScreen.style.display = 'flex';
-        
-        // Slight delay to trigger CSS fade-in
-        setTimeout(() => {
-            loginScreen.style.opacity = '1';
-        }, 50);
-        
-        showToast("Logged out successfully.");
+    // --- LOGIN / REGISTER LOGIC ---
+    let isRegistering = false;
+
+    document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
+        isRegistering = !isRegistering;
+        document.getElementById('auth-title').innerText = isRegistering ? "Create Account" : "Log In";
+        document.getElementById('btn-login').style.display = isRegistering ? "none" : "block";
+        document.getElementById('btn-register').style.display = isRegistering ? "block" : "none";
+        e.target.innerText = isRegistering ? "Already have an account? Log In" : "Need an account? Sign Up";
     });
 
+    document.getElementById('btn-register').addEventListener('click', () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        createUserWithEmailAndPassword(auth, email, pass)
+            .then(() => showToast("Account created successfully!"))
+            .catch((error) => showToast("Error: " + error.message));
+    });
 
-    // --- FILE INPUTS ---
-   // --- REAL AI FILE INPUTS (TESSERACT.JS) ---
-    
-    async function scanReceiptWithAI(file) {
-        showToast("📸 Reading receipt... Keep the app open (may take 5-10s).");
-        console.log("Starting AI OCR process...");
-        
-        try {
-            // Start the AI Worker
-            const worker = await Tesseract.createWorker('eng');
-            
-            // Read the image
-            const ret = await worker.recognize(file);
-            const text = ret.data.text;
-            await worker.terminate();
+    document.getElementById('btn-login').addEventListener('click', () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        signInWithEmailAndPassword(auth, email, pass)
+            .catch((error) => showToast("Error: Invalid email or password."));
+    });
 
-            // 🔍 DEBUGGING: Look at your browser console to see what the AI actually read!
-            console.log("----- RAW TEXT SEEN BY AI -----");
-            console.log(text);
-            console.log("-------------------------------");
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            closeSidebar();
+            showToast("Logged out securely.");
+        });
+    });
 
-            // Smarter Search: Matches 12.34, 1,234.56, 1234,56, etc.
-            const amounts = text.match(/\b\d{1,3}(?:[.,]\d{3})*[.,]\d{2}\b/g);
-
-            if (amounts && amounts.length > 0) {
-                console.log("Potential money amounts found:", amounts);
-                
-                // Clean up the numbers (remove commas, fix weird decimals)
-                const cleanAmounts = amounts.map(str => {
-                    // Replace commas with nothing (1,200.00 -> 1200.00)
-                    let cleanStr = str.replace(/,/g, '');
-                    return parseFloat(cleanStr);
-                }).filter(num => !isNaN(num));
-
-                // Find the highest number (usually the grand total)
-                const maxAmount = Math.max(...cleanAmounts);
-                
-                if (maxAmount > 0) {
-                    processTransaction(maxAmount, 'out', 'wallet', 'Scanned AI Receipt');
-                    showToast(`✅ Success! Found Total: ₱${maxAmount}`);
-                    setTimeout(() => { document.getElementById('history-modal').style.display = 'flex'; }, 1000);
-                } else {
-                    throw new Error("Found numbers, but none were greater than 0.");
-                }
-            } else {
-                // If it can't find a price, open the manual entry
-                showToast("⚠️ Couldn't find a clear price. Please enter manually.");
-                document.getElementById('tx-note').value = "Unreadable Receipt";
-                document.getElementById('transaction-modal').style.display = 'flex';
-            }
-        } catch (error) {
-            console.error("AI Scanning Error:", error);
-            showToast("⚠️ Error analyzing image. Try a clearer photo.");
+    // --- FILE INPUT LISTENERS ---
+    document.getElementById('camera-input').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            scanReceiptWithAI(e.target.files[0]);
+            e.target.value = ""; 
         }
-    }
+    });
 
-    // --- SIDEBAR ---
+    document.getElementById('gallery-input').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            scanReceiptWithAI(e.target.files[0]);
+            e.target.value = ""; 
+        }
+    });
+
+    // --- SIDEBAR & MODAL LISTENERS ---
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
 
-    window.openSidebar = function() {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-    };
-
-    window.closeSidebar = function() {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    };
+    window.openSidebar = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+    window.closeSidebar = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
 
     document.getElementById('menu-btn').addEventListener('click', openSidebar);
     document.getElementById('close-sidebar').addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
 
-    // --- NEW TRANSACTION MODAL ---
     const txModal = document.getElementById('transaction-modal');
-    
-    document.getElementById('add-transaction-btn').addEventListener('click', () => {
-        txModal.style.display = 'flex';
-    });
-
-    document.getElementById('btn-cancel').addEventListener('click', () => {
-        txModal.style.display = 'none';
-    });
+    document.getElementById('add-transaction-btn').addEventListener('click', () => txModal.style.display = 'flex');
+    document.getElementById('btn-cancel').addEventListener('click', () => txModal.style.display = 'none');
 
     document.getElementById('btn-save').addEventListener('click', () => {
         const amount = parseFloat(document.getElementById('tx-amount').value);
@@ -276,31 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const account = document.getElementById('tx-account').value;
         const note = document.getElementById('tx-note').value;
 
-        if (isNaN(amount) || amount <= 0) {
-            showToast("⚠️ Please enter a valid amount.");
-            return;
-        }
-        if (amount > 1000000000) {
-            showToast("⚠️ Amount is too large!");
-            return;
-        }
-
+        if (isNaN(amount) || amount <= 0) return showToast("⚠️ Invalid amount.");
+        
         processTransaction(amount, type, account, note);
         txModal.style.display = 'none';
-        
         document.getElementById('tx-amount').value = '';
         document.getElementById('tx-note').value = '';
-        showToast("✅ Transaction saved successfully!");
+        showToast("✅ Saved to cloud!");
     });
 
-    // --- HISTORY MODAL ---
     const historyModal = document.getElementById('history-modal');
-
     document.getElementById('history-btn').addEventListener('click', () => {
         historyModal.style.display = 'flex';
+        setFilter('all'); // Reset filter when opened
     });
-
-    document.getElementById('btn-close-history').addEventListener('click', () => {
-        historyModal.style.display = 'none';
-    });
+    document.getElementById('btn-close-history').addEventListener('click', () => historyModal.style.display = 'none');
 });

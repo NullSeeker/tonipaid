@@ -16,20 +16,22 @@
             <div class="logo login-logo">TONI<span>PAID</span></div>
             <p class="login-subtitle">Manage your wealth wisely.</p>
             
+            <h3 id="auth-title" style="text-align: center; margin-bottom: 15px;">Log In</h3>
+            
             <div class="input-group">
-                <label>Email or Username</label>
-                <input type="text" id="login-user" value="toni@tonipaid.com" required>
+                <label>Email</label>
+                <input type="email" id="login-email" placeholder="you@email.com" required>
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <input type="password" id="login-pass" value="admin123" required>
+                <input type="password" id="login-pass" placeholder="******" required>
             </div>
             
             <button id="btn-login" class="btn-primary login-btn">Log In</button>
+            <button id="btn-register" class="btn-secondary login-btn" style="display: none;">Create Account</button>
             
-            <div class="login-links">
-                <span onclick="showToast('Password reset link sent!')">Forgot Password?</span>
-                <span onclick="showToast('Registration opening soon!')">Sign Up</span>
+            <div class="login-links" style="justify-content: center;">
+                <span id="toggle-auth-mode">Need an account? Sign Up</span>
             </div>
         </div>
     </div>
@@ -52,35 +54,26 @@
             <div class="sidebar-content">
                 <h4>App Features</h4>
                 <ul class="feature-menu">
-                    <li class="menu-item" onclick="showToast('Offline Tracking is Active')">
-                        <span>Offline Tracking</span>
-                    </li>
                     <li class="menu-item" onclick="document.getElementById('history-btn').click(); closeSidebar();">
-                        <span>Transactions & Dates</span>
+                        <span>Transactions & Filters</span>
                     </li>
-                    <li class="menu-item" onclick="showToast('Filters coming in the next update!')">
-                        <span>Filter Transactions</span>
-                    </li>
-                    <li class="menu-item" onclick="showToast('Savings tracking coming soon!')">
-                        <span>Savings & Alerts</span>
+                    <li class="menu-item" style="opacity: 0.5; cursor: not-allowed;" onclick="showToast('Budget Planning is currently locked.')">
+                        <span>Budget Planning</span>
+                        <span class="badge" style="background: #ccc; color: #333;">Locked</span>
                     </li>
                     
                     <div class="menu-divider"></div>
-                    <h4>Premium & Gold</h4>
+                    <h4>Gold Features ⭐️</h4>
 
                     <li class="menu-item" onclick="simulateScan(); closeSidebar();">
-                        <span>Scan Receipt</span>
-                        <span class="badge premium">Premium</span>
-                    </li>
-                    <li class="menu-item" onclick="showToast('⭐️ Upgrade to Gold to Link your Bank!')">
-                        <span>Link Bank Account</span>
+                        <span>Scan Receipt (Auto-Expense)</span>
                         <span class="badge gold">Gold</span>
                     </li>
-                    <li class="menu-item" onclick="showToast('⭐️ Upgrade to Gold for Budget Planning!')">
-                        <span>Budget Planning</span>
+                    <li class="menu-item" onclick="linkBank()">
+                        <span>Link Bank (Auto-Track)</span>
                         <span class="badge gold">Gold</span>
                     </li>
-                    <li class="menu-item" onclick="showToast('⭐️ Upgrade to Gold for Financial Advisor!')">
+                    <li class="menu-item" onclick="accessAdvisor()">
                         <span>Financial Advisor</span>
                         <span class="badge gold">Gold</span>
                     </li>
@@ -88,14 +81,11 @@
                     <div class="menu-divider"></div>
                     <h4>Account</h4>
 
-                    <li class="menu-item" onclick="togglePremium()">
-                        <span style="color: #4CAF50;">🟢 Toggle Premium Status</span>
-                    </li>
-                    <li class="menu-item" onclick="resetAppData()">
-                        <span style="color: #D32F2F;">⚠️ Reset App Data</span>
+                    <li class="menu-item" onclick="toggleGold()">
+                        <span style="color: #FFD700;">⭐️ Toggle Gold Status</span>
                     </li>
                     <li class="menu-item" id="btn-logout">
-                        <span style="color: var(--text-muted);">Log Out</span>
+                        <span style="color: #D32F2F;">Log Out</span>
                     </li>
                 </ul>
             </div>
@@ -119,7 +109,7 @@
             </div>
             <div class="user-info">
                 <p id="user-tier-label">Standard User</p>
-                <h3 id="user-greeting-name">Good Morning!</h3>
+                <h3 id="user-greeting-name">Loading...</h3>
             </div>
         </div>
 
@@ -128,28 +118,43 @@
                 <div class="card-header">
                     <div class="card-title">
                         <svg viewBox="0 0 24 24" class="icon"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm3-6H4V6h14v6z"/></svg>
-                        <h2>WALLET</h2>
+                        <h2>WALLET (Cash)</h2>
                     </div>
                     <span class="balance-text" id="wallet-balance">₱0.00</span>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="wallet-fill"></div>
-                </div>
-                <p class="card-subtitle">Cash Balance</p>
+                <p class="card-subtitle">Manual Offline Tracking</p>
             </div>
 
             <div class="balance-card">
                 <div class="card-header">
                     <div class="card-title">
                         <svg viewBox="0 0 24 24" class="icon"><path d="M4 10h3v7H4zM10.5 10h3v7h-3zM2 19h20v3H2zM17 10h3v7h-3zM12 1L2 6v2h20V6z"/></svg>
-                        <h2>BANK</h2>
+                        <h2>BANK (Cashless)</h2>
                     </div>
                     <span class="balance-text" id="bank-balance">₱0.00</span>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="bank-fill"></div>
+                <p class="card-subtitle">Auto Online Tracking</p>
+            </div>
+
+            <div class="balance-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>SAVINGS VS EXPENSES</h2>
+                    </div>
                 </div>
-                <p class="card-subtitle">Cashless Balance</p>
+                <div class="graph-container">
+                    <div class="graph-bar-wrapper">
+                        <div class="graph-bar savings-bar" id="graph-savings"></div>
+                        <span>Income</span>
+                    </div>
+                    <div class="graph-bar-wrapper">
+                        <div class="graph-bar expense-bar" id="graph-expenses"></div>
+                        <span>Expenses</span>
+                    </div>
+                </div>
+                <div class="emergency-fund-alert">
+                    🚨 Emergency Fund (Misc 30%): <strong id="emergency-text">₱0.00</strong>
+                </div>
             </div>
         </div>
 
@@ -214,12 +219,17 @@
                     <h3>History</h3>
                     <button id="btn-close-history" class="btn-secondary close-history-btn">X</button>
                 </div>
+                <div class="history-filters">
+                    <button class="filter-btn active" onclick="setFilter('all')">All</button>
+                    <button class="filter-btn" onclick="setFilter('in')">Incomes</button>
+                    <button class="filter-btn" onclick="setFilter('out')">Expenses</button>
+                </div>
                 <div id="history-list" class="transaction-list"></div>
             </div>
         </div>
 
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
