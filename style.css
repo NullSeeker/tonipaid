@@ -1,3 +1,4 @@
+/* --- GLOBAL CONFIGURATION RESET --- */
 * {
     margin: 0;
     padding: 0;
@@ -6,24 +7,28 @@
 }
 
 body {
-    background-color: #f4f7f6;
+    background-color: #eef2f3; /* Distinct desktop background wrapper color */
     color: #333;
     display: flex;
     justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-.app-container {
+/* --- MOBILE ENVELOPE CASING CONTAINER --- */
+.app-container, .login-screen {
     width: 100%;
-    max-width: 480px;
+    max-width: 430px; /* Standardized Mobile Phone Framework Sizing */
     height: 100vh;
     background: #f4f7f6;
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
     padding-bottom: 80px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
-/* Toast */
+/* --- TOAST SYSTEM RULES --- */
 .toast {
     position: fixed;
     top: 20px;
@@ -38,13 +43,17 @@ body {
     pointer-events: none;
     transition: opacity 0.3s;
     z-index: 2000;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
 }
 .toast.show { opacity: 1; }
 
-/* Login Screen */
+/* --- LOGIN MODULE PARAMETERS --- */
 .login-screen {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0; 
+    left: auto; /* Overrides screen-stretching quirks on widescreen monitors */
     background: #fff;
     display: flex;
     justify-content: center;
@@ -52,6 +61,7 @@ body {
     z-index: 3000;
     transition: opacity 0.5s;
 }
+
 .login-content {
     width: 90%;
     max-width: 350px;
@@ -60,18 +70,25 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     background: #fafafa;
 }
+
 .login-logo {
     text-align: center;
     font-size: 2rem;
     margin-bottom: 5px;
 }
+
 .login-subtitle {
     text-align: center;
     color: #777;
     margin-bottom: 25px;
     font-size: 0.9rem;
 }
-.login-btn { width: 100%; margin-top: 15px; }
+
+.login-btn { 
+    width: 100%; 
+    margin-top: 15px; 
+}
+
 .login-links {
     margin-top: 20px;
     text-align: center;
@@ -80,19 +97,21 @@ body {
     cursor: pointer;
 }
 
-/* Header */
+/* --- APPLICATION CORE CONTENT STYLES --- */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
 }
+
 .logo {
     font-weight: 900;
     font-size: 1.5rem;
     letter-spacing: 1px;
 }
 .logo span { color: #D4AF37; }
+
 .menu-icon svg {
     width: 28px;
     height: 28px;
@@ -100,7 +119,7 @@ header {
     cursor: pointer;
 }
 
-/* User Card */
+/* User Card Container */
 .user-card {
     background: linear-gradient(135deg, #D4AF37, #B5952F);
     margin: 0 20px;
@@ -111,6 +130,7 @@ header {
     align-items: center;
     box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
 }
+
 .user-avatar {
     width: 50px;
     height: 50px;
@@ -122,11 +142,12 @@ header {
     margin-right: 15px;
 }
 .user-avatar svg { width: 30px; height: 30px; fill: white; }
+
 .user-info p { font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; }
 .user-info h3 { font-size: 1.3rem; font-weight: 700; }
 
-/* Main Content */
 .main-content { padding: 20px; }
+
 .balance-card {
     background: white;
     border-radius: 15px;
@@ -134,7 +155,9 @@ header {
     margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
 }
+
 .card-header { margin-bottom: 15px; }
+
 .card-title {
     display: flex;
     align-items: center;
@@ -160,7 +183,7 @@ header {
 }
 .card-subtitle { font-size: 0.8rem; color: #888; text-align: right; margin-top: 8px; }
 
-/* Graph Styles */
+/* --- TRANSACTION ANALYTICS BAR CHART GRAPH --- */
 .graph-container {
     display: flex;
     justify-content: space-around;
@@ -170,6 +193,7 @@ header {
     padding-bottom: 10px;
     border-bottom: 2px solid #eee;
 }
+
 .graph-bar-wrapper {
     display: flex;
     flex-direction: column;
@@ -178,6 +202,7 @@ header {
     height: 100%;
     justify-content: flex-end;
 }
+
 .graph-bar {
     width: 100%;
     border-radius: 6px 6px 0 0;
@@ -198,12 +223,12 @@ header {
     border-radius: 6px;
 }
 
-/* Footer Navigation */
+/* --- FOOTER NAVIGATION ELEMENTS --- */
 footer {
     position: fixed;
     bottom: 0;
     width: 100%;
-    max-width: 480px;
+    max-width: 430px; /* Constrains the layout navigation toolbar sizing */
     background: white;
     display: flex;
     justify-content: space-around;
@@ -213,6 +238,7 @@ footer {
     border-radius: 20px 20px 0 0;
     z-index: 100;
 }
+
 .nav-icon {
     display: flex;
     flex-direction: column;
@@ -222,6 +248,7 @@ footer {
 }
 .nav-icon svg { width: 24px; height: 24px; fill: currentColor; margin-bottom: 4px; }
 .nav-icon span { font-size: 0.75rem; font-weight: 600; }
+
 .nav-fab {
     width: 55px;
     height: 55px;
@@ -236,7 +263,7 @@ footer {
 }
 .nav-fab svg { width: 28px; height: 28px; fill: white; }
 
-/* Modals */
+/* --- MODALS LAYOUT DESIGNS --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -246,6 +273,7 @@ footer {
     align-items: center;
     z-index: 1000;
 }
+
 .modal-content {
     background: white;
     width: 90%;
@@ -254,6 +282,7 @@ footer {
     padding: 25px;
 }
 .modal-content h3 { margin-bottom: 20px; color: #333; }
+
 .input-group { margin-bottom: 15px; }
 .input-group label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 5px; }
 .input-group input, .input-group select {
@@ -264,7 +293,9 @@ footer {
     outline: none;
     font-size: 1rem;
 }
+
 .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+
 .btn-primary, .btn-secondary {
     flex: 1;
     padding: 12px;
@@ -276,7 +307,7 @@ footer {
 .btn-primary { background: #D4AF37; color: white; }
 .btn-secondary { background: #eee; color: #333; }
 
-/* History Specific Styles */
+/* History Specific Overlay Controls */
 .history-content { max-height: 80vh; display: flex; flex-direction: column; }
 .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .close-history-btn { flex: 0; padding: 5px 12px; border-radius: 5px; }
@@ -317,11 +348,13 @@ footer {
 .tx-amount.out { color: #F44336; }
 .empty-history { text-align: center; color: #888; padding: 20px 0; font-size: 0.9rem; }
 
-/* Sidebar */
+/* --- SIDEBAR OVERLAY ARCHITECTURE --- */
 .sidebar {
     position: fixed;
-    top: 0; right: -280px;
-    width: 280px; height: 100%;
+    top: 0; 
+    right: -280px;
+    width: 280px; 
+    height: 100%;
     background: white;
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     z-index: 1001;
@@ -330,6 +363,7 @@ footer {
     flex-direction: column;
 }
 .sidebar.active { right: 0; }
+
 .sidebar-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -338,6 +372,7 @@ footer {
     display: none;
 }
 .sidebar-overlay.active { display: block; }
+
 .sidebar-header {
     padding: 20px;
     border-bottom: 1px solid #eee;
@@ -347,9 +382,11 @@ footer {
 }
 .sidebar-header h2 { font-size: 1.2rem; color: #333; }
 .close-btn svg { width: 24px; height: 24px; fill: #666; cursor: pointer; }
+
 .sidebar-content { padding: 20px; overflow-y: auto; }
 .sidebar-content h4 { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 10px; margin-top: 15px; }
 .feature-menu { list-style: none; }
+
 .menu-item {
     display: flex;
     justify-content: space-between;
@@ -362,6 +399,7 @@ footer {
 }
 .menu-item:hover { color: #D4AF37; }
 .menu-divider { height: 1px; background: #eee; margin: 10px 0; }
+
 .badge {
     font-size: 0.65rem;
     padding: 3px 6px;
