@@ -1,23 +1,3 @@
-// Import Firebase functions
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-// ⚠️ REPLACE THIS OBJECT WITH YOUR CONFIG FROM FIREBASE CONSOLE ⚠️
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "YOUR_APP_ID"
-};
-
-// Initialize Firebase App
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
 // Default User Data
 const defaultData = {
     isGold: false, 
@@ -30,27 +10,20 @@ const defaultData = {
 
 let userData = JSON.parse(JSON.stringify(defaultData));
 
-// --- FIREBASE DATABASE SYNCING ---
-async function saveToCloud() {
-    const user = auth.currentUser;
-    if (user) {
-        try {
-            await setDoc(doc(db, "users", user.uid), userData);
-        } catch (error) {
-            console.error("Error saving data:", error);
-        }
-    }
+// --- LOCAL STORAGE DATABASE SYNCING ---
+function saveToCloud() {
+    // Saves data locally in the user's browser
+    localStorage.setItem("toniPaid_data", JSON.stringify(userData));
 }
 
-async function loadFromCloud(user) {
-    const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-        userData = docSnap.data();
+function loadFromCloud() {
+    // Loads data from the user's browser
+    const savedData = localStorage.getItem("toniPaid_data");
+    if (savedData) {
+        userData = JSON.parse(savedData);
     } else {
         userData = JSON.parse(JSON.stringify(defaultData));
-        await saveToCloud(); 
+        saveToCloud(); 
     }
     updateDashboardUI();
     updateHistoryUI();
@@ -75,7 +48,6 @@ function updateDashboardUI() {
     document.getElementById('user-tier-label').innerText = userData.isGold ? "⭐️ Gold User" : "Standard User";
     document.getElementById('user-tier-label').style.color = userData.isGold ? "#FFD700" : "rgba(255,255,255,0.9)";
 
-    // Calculate totals for Graph and Emergency Fund
     let totalIncome = 0;
     let totalExpenses = 0;
 
@@ -84,16 +56,13 @@ function updateDashboardUI() {
         if (tx.type === 'out') totalExpenses += tx.amount;
     });
 
-    // 30% Emergency Fund Logic
     let emergencyFund = totalIncome * 0.30;
     document.getElementById('emergency-text').innerText = formatCurrency(emergencyFund);
 
-    // If emergency fund is less than 100, notify user
     if (emergencyFund > 0 && emergencyFund < 100) {
         showToast("⚠️ Notice: Please put at least a minimum of ₱100 in your Emergency Fund (Misc)!");
     }
 
-    // Update Graph Heights (Relative to the largest number)
     let maxGraphValue = Math.max(totalIncome, totalExpenses, 1); 
     let incomeHeight = (totalIncome / maxGraphValue) * 100;
     let expenseHeight = (totalExpenses / maxGraphValue) * 100;
@@ -107,11 +76,8 @@ let currentFilter = 'all';
 
 window.setFilter = function(type) {
     currentFilter = type;
-    
-    // Update button styling
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    
     updateHistoryUI();
 }
 
@@ -119,7 +85,6 @@ function updateHistoryUI() {
     const list = document.getElementById('history-list');
     list.innerHTML = ''; 
 
-    // Filter the transactions
     const filteredTx = userData.transactions.filter(tx => {
         if (currentFilter === 'all') return true;
         return tx.type === currentFilter;
@@ -169,7 +134,6 @@ function processTransaction(amount, type, accountType, note) {
 }
 
 // --- GOLD TIER ACTIONS ---
-
 window.toggleGold = function() {
     userData.isGold = !userData.isGold;
     saveToCloud();
@@ -179,31 +143,23 @@ window.toggleGold = function() {
 };
 
 window.linkBank = function() {
-    if (!userData.isGold) {
-        return showToast("⭐️ Please upgrade to Gold to automatically track bank accounts!");
-    }
+    if (!userData.isGold) return showToast("⭐️ Please upgrade to Gold to automatically track bank accounts!");
     showToast("🏦 Bank Tracking feature unlocked!");
 };
 
 window.accessAdvisor = function() {
-    if (!userData.isGold) {
-        return showToast("⭐️ Please upgrade to Gold to access the Financial Advisor!");
-    }
+    if (!userData.isGold) return showToast("⭐️ Please upgrade to Gold to access the Financial Advisor!");
     showToast("🧑‍💼 Connecting to Financial Advisor...");
 };
 
 window.simulateScan = function() {
-    if (!userData.isGold) {
-        return showToast("⭐️ Please upgrade to Gold to scan receipts!");
-    }
+    if (!userData.isGold) return showToast("⭐️ Please upgrade to Gold to scan receipts!");
     document.getElementById('camera-input').click();
 };
 
 // --- REAL AI FILE INPUTS (TESSERACT.JS) ---
-
 async function scanReceiptWithAI(file) {
     showToast("📸 Reading receipt... Keep the app open (may take 5-10s).");
-    console.log("Starting AI OCR process...");
     
     try {
         const worker = await Tesseract.createWorker('eng');
@@ -211,20 +167,10 @@ async function scanReceiptWithAI(file) {
         const text = ret.data.text;
         await worker.terminate();
 
-        console.log("----- RAW TEXT SEEN BY AI -----");
-        console.log(text);
-        console.log("-------------------------------");
-
         const amounts = text.match(/\b\d{1,3}(?:[.,]\d{3})*[.,]\d{2}\b/g);
 
         if (amounts && amounts.length > 0) {
-            console.log("Potential money amounts found:", amounts);
-            
-            const cleanAmounts = amounts.map(str => {
-                let cleanStr = str.replace(/,/g, '');
-                return parseFloat(cleanStr);
-            }).filter(num => !isNaN(num));
-
+            const cleanAmounts = amounts.map(str => parseFloat(str.replace(/,/g, ''))).filter(num => !isNaN(num));
             const maxAmount = Math.max(...cleanAmounts);
             
             if (maxAmount > 0) {
@@ -240,7 +186,6 @@ async function scanReceiptWithAI(file) {
             document.getElementById('transaction-modal').style.display = 'flex';
         }
     } catch (error) {
-        console.error("AI Scanning Error:", error);
         showToast("⚠️ Error analyzing image. Try a clearer photo.");
     }
 }
@@ -251,25 +196,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainApp = document.getElementById('main-app');
     const greetingName = document.getElementById('user-greeting-name');
 
-    // --- FIREBASE AUTHENTICATION LISTENER ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            const displayName = user.email.split('@')[0];
-            greetingName.innerText = displayName.charAt(0).toUpperCase() + displayName.slice(1) + "!";
-            
-            loadFromCloud(user).then(() => {
-                loginScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loginScreen.style.display = 'none';
-                    mainApp.style.display = 'flex'; 
-                }, 500);
-            });
-        } else {
-            mainApp.style.display = 'none';
-            loginScreen.style.display = 'flex';
-            setTimeout(() => { loginScreen.style.opacity = '1'; }, 50);
-        }
-    });
+    // --- MOCK AUTHENTICATION CHECK ---
+    const savedUser = localStorage.getItem("toniPaid_user");
+    if (savedUser) {
+        greetingName.innerText = savedUser + "!";
+        loadFromCloud();
+        loginScreen.style.display = 'none';
+        mainApp.style.display = 'flex';
+    } else {
+        mainApp.style.display = 'none';
+        loginScreen.style.display = 'flex';
+    }
 
     // --- LOGIN / REGISTER LOGIC ---
     let isRegistering = false;
@@ -282,26 +219,38 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.innerText = isRegistering ? "Already have an account? Log In" : "Need an account? Sign Up";
     });
 
-    document.getElementById('btn-register').addEventListener('click', () => {
+    function handleLogin() {
         const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-pass').value;
-        createUserWithEmailAndPassword(auth, email, pass)
-            .then(() => showToast("Account created successfully!"))
-            .catch((error) => showToast("Error: " + error.message));
-    });
+        if (!email) return showToast("Please enter an email!");
+        
+        const displayName = email.split('@')[0];
+        const formattedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+        
+        localStorage.setItem("toniPaid_user", formattedName);
+        greetingName.innerText = formattedName + "!";
+        
+        loadFromCloud();
+        
+        loginScreen.style.opacity = '0';
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+            mainApp.style.display = 'flex'; 
+        }, 500);
+        showToast("Logged in successfully!");
+    }
 
-    document.getElementById('btn-login').addEventListener('click', () => {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-pass').value;
-        signInWithEmailAndPassword(auth, email, pass)
-            .catch((error) => showToast("Error: Invalid email or password."));
-    });
+    document.getElementById('btn-register').addEventListener('click', handleLogin);
+    document.getElementById('btn-login').addEventListener('click', handleLogin);
 
     document.getElementById('btn-logout').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            closeSidebar();
-            showToast("Logged out securely.");
-        });
+        localStorage.removeItem("toniPaid_user");
+        closeSidebar();
+        mainApp.style.display = 'none';
+        loginScreen.style.display = 'flex';
+        loginScreen.style.opacity = '1';
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-pass').value = '';
+        showToast("Logged out successfully.");
     });
 
     // --- FILE INPUT LISTENERS ---
@@ -346,13 +295,13 @@ document.addEventListener('DOMContentLoaded', () => {
         txModal.style.display = 'none';
         document.getElementById('tx-amount').value = '';
         document.getElementById('tx-note').value = '';
-        showToast("✅ Saved to cloud!");
+        showToast("✅ Saved!");
     });
 
     const historyModal = document.getElementById('history-modal');
     document.getElementById('history-btn').addEventListener('click', () => {
         historyModal.style.display = 'flex';
-        setFilter('all'); // Reset filter when opened
+        setFilter('all'); 
     });
     document.getElementById('btn-close-history').addEventListener('click', () => historyModal.style.display = 'none');
 });
