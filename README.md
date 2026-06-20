@@ -1,4 +1,4 @@
-ToniPaid 
+# ToniPaid 
 
 ToniPaid is a lightweight, web-based personal finance and wealth management application. It helps users track their cash and cashless balances, log transactions, and intelligently scan receipts using AI.
 
