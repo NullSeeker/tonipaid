@@ -1,28 +1,32 @@
 let currentWallet = 'cash';
 let currentTier = 'Free'; 
 
+// --- USER AUTHENTICATION DATABASE ---
+const registeredUsers = []; // Stores all accounts created during the session
+
+// --- FINANCIAL DATABASE ---
 const appData = {
     cash: {
         balance: 5000,
         expenses: { Food: 1200, Bills: 1500, Shopping: 600, Fun: 200, Transport: 150 },
         history: [
-            { type: 'in', category: 'Salary', amount: 7650, date: '2026-06-19' },
-            { type: 'out', category: 'Food', amount: 1200, date: '2026-06-20' }
+            { type: 'in', category: 'Salary', amount: 7650, date: '2026-06-19 09:00 AM' },
+            { type: 'out', category: 'Food', amount: 1200, date: '2026-06-20 12:30 PM' }
         ]
     },
     cashless: {
         balance: 15240,
         expenses: { Food: 2765, Bills: 2160, Shopping: 1299, Fun: 249, Transport: 180 },
         history: [
-            { type: 'out', category: 'Bills', amount: 2160, date: '2026-06-18' },
-            { type: 'out', category: 'Food', amount: 2765, date: '2026-06-21' }
+            { type: 'out', category: 'Bills', amount: 2160, date: '2026-06-18 08:15 AM' },
+            { type: 'out', category: 'Food', amount: 2765, date: '2026-06-21 07:45 PM' }
         ]
     }
 };
 
 const categoryColors = { Food: '#FF7A00', Bills: '#FFC107', Shopping: '#E91E63', Fun: '#00BFA5', Transport: '#2962FF' };
-document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
 
+// --- CHART INITIALIZATION ---
 let chart;
 const ctx = document.getElementById('expenseChart').getContext('2d');
 
@@ -34,6 +38,7 @@ function initChart() {
     });
 }
 
+// --- UI UPDATER ---
 function updateUI() {
     const wallet = appData[currentWallet];
     
@@ -127,12 +132,61 @@ function closeSidebar() {
     document.getElementById('sidebarOverlay').classList.remove('active');
 }
 
-// --- APP FLOW ---
+// --- AUTHENTICATION FLOW ---
+
+function toggleAuthMode() {
+    const login = document.getElementById('loginForm');
+    const signup = document.getElementById('signupForm');
+    if (login.style.display === 'none') {
+        login.style.display = 'block';
+        signup.style.display = 'none';
+    } else {
+        login.style.display = 'none';
+        signup.style.display = 'block';
+    }
+}
+
+function performSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const pass = document.getElementById('signupPassword').value;
+
+    if (!name || !email || !pass) {
+        showToast("Please fill out all fields to sign up.");
+        return;
+    }
+    
+    // Check if user already exists
+    if (registeredUsers.find(u => u.email === email)) {
+        showToast("An account with this email already exists!");
+        return;
+    }
+    
+    // Save to database
+    registeredUsers.push({ name, email, pass });
+    showToast("Account created! You can now login.");
+    
+    // Clear form and switch to login
+    document.getElementById('signupName').value = '';
+    document.getElementById('signupEmail').value = '';
+    document.getElementById('signupPassword').value = '';
+    toggleAuthMode();
+}
 
 function performLogin() {
-    const user = document.getElementById('loginUser').value || 'User';
-    document.getElementById('welcomeName').innerText = user + '!';
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+
+    // Authenticate against database
+    const user = registeredUsers.find(u => u.email === email && u.pass === pass);
     
+    if (!user) {
+        showToast("Invalid credentials or account does not exist.");
+        return;
+    }
+
+    // Success
+    document.getElementById('welcomeName').innerText = user.name + '!';
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
     setTimeout(() => document.getElementById('mainApp').className = 'app-container fade-in', 50);
@@ -141,6 +195,11 @@ function performLogin() {
 
 function logout() {
     document.getElementById('mainApp').className = 'app-container fade-out';
+    
+    // Clear login fields to protect privacy
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    
     setTimeout(() => {
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
@@ -164,10 +223,9 @@ function updateTier() {
 }
 
 function triggerFeature(requiredTier, featureName) {
-    const tiers = { 'Free': 0, 'Gold': 1 }; // Stripped out Premium
+    const tiers = { 'Free': 0, 'Gold': 1 };
     
     if (tiers[currentTier] >= tiers[requiredTier]) {
-        // Feature Router
         if (featureName === 'Scan Receipt') {
             startCamera();
         } else if (featureName === 'RoboAdvisor') {
@@ -211,12 +269,10 @@ function closeCamera() {
 function captureReceipt() {
     showToast("Scanning AI processing...");
     
-    // Simulating the time it takes an AI to read a receipt
     setTimeout(() => {
         closeCamera();
         openModal('addModal');
         
-        // Magically and accurately fill the form with "scanned" data
         document.getElementById('txAmount').value = "1250.00";
         document.getElementById('txCategory').value = "Shopping";
         document.getElementById('txType').value = "out";
@@ -225,26 +281,41 @@ function captureReceipt() {
     }, 1500);
 }
 
+// --- TRANSACTION LOGIC ---
+
 function addTransaction() {
     const type = document.getElementById('txType').value;
     const category = document.getElementById('txCategory').value;
     const amount = parseFloat(document.getElementById('txAmount').value);
-    const date = document.getElementById('txDate').value;
+    let dateInput = document.getElementById('txDate').value;
 
     if (!amount || amount <= 0) { alert("Please input a valid amount."); return; }
+
+    // REAL-TIME FALLBACK: If user left date blank, generate exact current date & time
+    if (!dateInput) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateString = now.toISOString().split('T')[0];
+        dateInput = `${dateString} ${timeString}`;
+    } else {
+        // Format the datetime-local input cleanly if they selected one
+        dateInput = dateInput.replace('T', ' '); 
+    }
 
     const wallet = appData[currentWallet];
     
     if (type === 'in') {
         wallet.balance += amount;
-        wallet.history.push({ type, category: 'Income: ' + category, amount, date });
+        wallet.history.push({ type, category: 'Income: ' + category, amount, date: dateInput });
     } else {
         wallet.balance -= amount;
         wallet.expenses[category] = (wallet.expenses[category] || 0) + amount;
-        wallet.history.push({ type, category, amount, date });
+        wallet.history.push({ type, category, amount, date: dateInput });
     }
 
+    // Clear form
     document.getElementById('txAmount').value = '';
+    document.getElementById('txDate').value = '';
     closeModal('addModal');
     updateUI();
 }
