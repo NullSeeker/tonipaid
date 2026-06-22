@@ -219,7 +219,7 @@ function triggerFeature(requiredTier, featureName) {
     if (tiers[currentTier] >= tiers[requiredTier]) {
         if (featureName === 'Scan Receipt') {
             startCamera();
-        } else if (featureName === 'RoboAdvisor') {
+        } else if (featureName === 'Financial Advisor') {
             closeSidebar();
             openModal('advisorModal');
         } else if (featureName === 'About Page') {
@@ -229,7 +229,7 @@ function triggerFeature(requiredTier, featureName) {
             showToast(`Launching ${featureName}...`);
         }
     } else {
-        showToast(`🔒 Locked. ${featureName} requires ${requiredTier} access.`);
+        showToast(`Locked. ${featureName} requires ${requiredTier} access.`);
     }
 }
 
