@@ -559,3 +559,14 @@ footer {
     font-weight: 800; 
     color: #111111; 
 }
+
+.star-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow: hidden;
+    z-index: -100;
+}
