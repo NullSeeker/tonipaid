@@ -1,4 +1,6 @@
 let currentWallet = 'cash';
+let currentTier = 'Free'; // Tracks subscription state
+
 const appData = {
     cash: {
         balance: 5000,
@@ -80,10 +82,16 @@ function updateUI() {
     });
 }
 
+// --- CORE UI CONTROLS ---
+
 function switchWallet(type) {
     currentWallet = type;
     document.getElementById('btnCash').className = type === 'cash' ? 'filter-btn active' : 'filter-btn';
     document.getElementById('btnCashless').className = type === 'cashless' ? 'filter-btn active' : 'filter-btn';
+    
+    // The "Link Bank Account" button ONLY shows up when you are in the Cashless tab!
+    document.getElementById('bankLinkContainer').style.display = type === 'cashless' ? 'block' : 'none';
+    
     updateUI();
 }
 
@@ -96,6 +104,32 @@ function switchView(view) {
 
     if(view === 'history') chart.update();
 }
+
+// --- PREMIUM/GOLD FEATURE LOGIC ---
+
+function showToast(msg) {
+    const toast = document.getElementById('appToast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function updateTier() {
+    currentTier = document.getElementById('tierSelect').value;
+    showToast(`Account updated to ${currentTier} tier!`);
+}
+
+function triggerFeature(requiredTier, featureName) {
+    const tiers = { 'Free': 0, 'Premium': 1, 'Gold': 2 };
+    
+    if (tiers[currentTier] >= tiers[requiredTier]) {
+        showToast(`Launching ${featureName}...`);
+    } else {
+        showToast(`🔒 Locked. ${featureName} requires ${requiredTier} tier.`);
+    }
+}
+
+// --- MODALS & MENUS ---
 
 function openModal() { document.getElementById('addModal').style.display = 'flex'; }
 function closeModal() { document.getElementById('addModal').style.display = 'none'; }
