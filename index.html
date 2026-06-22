@@ -4,16 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toni Paid</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="app-container">
+<div class="login-screen" id="loginScreen">
+    <div class="login-content">
+        <div class="login-logo">Toni<span>Paid</span></div>
+        <p class="login-subtitle">Manage your finances smartly</p>
+        
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="loginUser" value="Loraine">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" value="••••••••">
+        </div>
+        
+        <button class="btn-primary login-btn" onclick="performLogin()">Login</button>
+        <div class="login-links">Forgot Password?</div>
+    </div>
+</div>
+
+<div class="app-container" id="mainApp" style="display: none;">
 
     <header>
         <div class="logo">Toni<span>Paid</span></div>
-        <div class="menu-icon">
+        <div class="menu-icon" onclick="openSidebar()">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </div>
     </header>
@@ -24,7 +48,7 @@
         </div>
         <div class="user-info">
             <p>Welcome back,</p>
-            <h3>Happy Name!</h3>
+            <h3 id="welcomeName">Loraine!</h3>
         </div>
     </div>
 
@@ -52,7 +76,6 @@
         </div>
 
         <div id="historyView" style="display: none;">
-            
             <div class="balance-card">
                 <div class="card-header">
                     <div class="card-title">
@@ -75,8 +98,7 @@
                 <div class="history-header">
                     <h3>Recent Logs</h3>
                 </div>
-                <div class="transaction-list" id="txHistory">
-                    </div>
+                <div class="transaction-list" id="txHistory"></div>
             </div>
         </div>
 
@@ -122,16 +144,34 @@
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
             <span>Home</span>
         </div>
-        
         <div class="nav-fab" onclick="openModal()">
             <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
-        
         <div class="nav-icon" onclick="switchView('history')" id="navHistory">
             <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
             <span>History</span>
         </div>
     </footer>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <div class="close-btn" onclick="closeSidebar()">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </div>
+        </div>
+        <div class="sidebar-content">
+            <h4>Settings</h4>
+            <ul class="feature-menu">
+                <li class="menu-item">Profile</li>
+                <li class="menu-item">Bank Linking <span class="badge gold">GOLD</span></li>
+                <li class="menu-item">RoboAdvisor <span class="badge gold">GOLD</span></li>
+                <div class="menu-divider"></div>
+                <li class="menu-item" onclick="logout()" style="color: #ef4444;">Logout</li>
+            </ul>
+        </div>
+    </div>
 
 </div>
 
