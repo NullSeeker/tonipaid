@@ -1,5 +1,5 @@
 let currentWallet = 'cash';
-let currentTier = 'Free'; // Tracks subscription state
+let currentTier = 'Free'; 
 
 const appData = {
     cash: {
@@ -82,30 +82,74 @@ function updateUI() {
     });
 }
 
-// --- CORE UI CONTROLS ---
+// --- VIEW & ANIMATION CONTROLS ---
 
 function switchWallet(type) {
     currentWallet = type;
     document.getElementById('btnCash').className = type === 'cash' ? 'filter-btn active' : 'filter-btn';
     document.getElementById('btnCashless').className = type === 'cashless' ? 'filter-btn active' : 'filter-btn';
-    
-    // The "Link Bank Account" button ONLY shows up when you are in the Cashless tab!
     document.getElementById('bankLinkContainer').style.display = type === 'cashless' ? 'block' : 'none';
-    
     updateUI();
 }
 
 function switchView(view) {
-    document.getElementById('homeView').style.display = view === 'home' ? 'block' : 'none';
-    document.getElementById('historyView').style.display = view === 'history' ? 'block' : 'none';
+    const home = document.getElementById('homeView');
+    const history = document.getElementById('historyView');
+    
+    if(view === 'home') {
+        history.className = 'fade-out';
+        setTimeout(() => home.className = 'fade-in', 300);
+    } else {
+        home.className = 'fade-out';
+        setTimeout(() => {
+            history.className = 'fade-in';
+            chart.update();
+        }, 300);
+    }
     
     document.getElementById('navHome').style.color = view === 'home' ? '#ccaa39' : '#a0aec0';
     document.getElementById('navHistory').style.color = view === 'history' ? '#ccaa39' : '#a0aec0';
-
-    if(view === 'history') chart.update();
 }
 
-// --- PREMIUM/GOLD FEATURE LOGIC ---
+function openModal(modalId) { 
+    document.getElementById(modalId).classList.add('active'); 
+}
+function closeModal(modalId) { 
+    document.getElementById(modalId).classList.remove('active'); 
+}
+
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('active');
+    document.getElementById('sidebarOverlay').classList.add('active');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('active');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// --- APP FLOW ---
+
+function performLogin() {
+    const user = document.getElementById('loginUser').value || 'User';
+    document.getElementById('welcomeName').innerText = user + '!';
+    
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'flex';
+    setTimeout(() => document.getElementById('mainApp').className = 'app-container fade-in', 50);
+    updateUI();
+}
+
+function logout() {
+    document.getElementById('mainApp').className = 'app-container fade-out';
+    setTimeout(() => {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        closeSidebar();
+        switchView('home');
+    }, 300);
+}
+
+// --- TIER & FEATURE LOGIC ---
 
 function showToast(msg) {
     const toast = document.getElementById('appToast');
@@ -120,42 +164,65 @@ function updateTier() {
 }
 
 function triggerFeature(requiredTier, featureName) {
-    const tiers = { 'Free': 0, 'Premium': 1, 'Gold': 2 };
+    const tiers = { 'Free': 0, 'Gold': 1 }; // Stripped out Premium
     
     if (tiers[currentTier] >= tiers[requiredTier]) {
-        showToast(`Launching ${featureName}...`);
+        // Feature Router
+        if (featureName === 'Scan Receipt') {
+            startCamera();
+        } else if (featureName === 'RoboAdvisor') {
+            closeSidebar();
+            openModal('advisorModal');
+        } else if (featureName === 'About Page') {
+            closeSidebar();
+            openModal('aboutModal');
+        } else {
+            showToast(`Launching ${featureName}...`);
+        }
     } else {
-        showToast(`🔒 Locked. ${featureName} requires ${requiredTier} tier.`);
+        showToast(`🔒 Locked. ${featureName} requires ${requiredTier} access.`);
     }
 }
 
-// --- MODALS & MENUS ---
+// --- LIVE CAMERA LOGIC ---
 
-function openModal() { document.getElementById('addModal').style.display = 'flex'; }
-function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+let cameraStream;
 
-function openSidebar() {
-    document.getElementById('sidebar').classList.add('active');
-    document.getElementById('sidebarOverlay').classList.add('active');
-}
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('active');
-    document.getElementById('sidebarOverlay').classList.remove('active');
-}
-
-function performLogin() {
-    const user = document.getElementById('loginUser').value || 'User';
-    document.getElementById('welcomeName').innerText = user + '!';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'flex';
-    updateUI();
+async function startCamera() {
+    closeModal('addModal');
+    openModal('cameraModal');
+    const video = document.getElementById('cameraFeed');
+    
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = cameraStream;
+    } catch (err) {
+        showToast("Camera access denied or unavailable.");
+    }
 }
 
-function logout() {
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
-    closeSidebar();
-    switchView('home');
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+    }
+    closeModal('cameraModal');
+}
+
+function captureReceipt() {
+    showToast("Scanning AI processing...");
+    
+    // Simulating the time it takes an AI to read a receipt
+    setTimeout(() => {
+        closeCamera();
+        openModal('addModal');
+        
+        // Magically and accurately fill the form with "scanned" data
+        document.getElementById('txAmount').value = "1250.00";
+        document.getElementById('txCategory').value = "Shopping";
+        document.getElementById('txType').value = "out";
+        
+        showToast("Receipt scanned and details extracted successfully!");
+    }, 1500);
 }
 
 function addTransaction() {
@@ -178,7 +245,7 @@ function addTransaction() {
     }
 
     document.getElementById('txAmount').value = '';
-    closeModal();
+    closeModal('addModal');
     updateUI();
 }
 
