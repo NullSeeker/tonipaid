@@ -12,14 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background-color: #eef2f5;"> <!-- Restored the clean background -->
 
-<!-- THE NEW STARRY BACKGROUND -->
-<div class="star-bg-container">
-    <div id="stars"></div>
-    <div id="stars2"></div>
-    <div id="stars3"></div>
-</div>
+<!-- TOAST NOTIFICATION SYSTEM -->
+<div class="toast" id="appToast">System Message</div>
 
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
@@ -41,7 +37,7 @@
     </div>
 </div>
 
-<!-- MAIN APPLICATION (Hidden until login) -->
+<!-- MAIN APPLICATION -->
 <div class="app-container" id="mainApp" style="display: none;">
 
     <header>
@@ -63,6 +59,7 @@
 
     <div class="main-content">
         
+        <!-- HOME VIEW -->
         <div id="homeView">
             <div class="balance-card">
                 <div class="card-header">
@@ -77,6 +74,13 @@
                     <button class="filter-btn active" id="btnCash" onclick="switchWallet('cash')">CASH</button>
                     <button class="filter-btn" id="btnCashless" onclick="switchWallet('cashless')">CASHLESS</button>
                 </div>
+
+                <!-- GOLD FEATURE: Bank Linking (Hidden in Cash mode) -->
+                <div id="bankLinkContainer" style="display: none; margin-top: 15px;">
+                    <button style="width: 100%; padding: 12px; border-radius: 12px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39; font-weight: 700; cursor: pointer;" onclick="triggerFeature('Gold', 'Bank Linking')">
+                        🔗 Link Bank Account <span class="badge gold">GOLD</span>
+                    </button>
+                </div>
             </div>
             
             <div class="emergency-fund-alert">
@@ -84,6 +88,7 @@
             </div>
         </div>
 
+        <!-- HISTORY VIEW -->
         <div id="historyView" style="display: none;">
             <div class="balance-card">
                 <div class="card-header">
@@ -113,9 +118,16 @@
 
     </div>
 
+    <!-- ADD TRANSACTION MODAL -->
     <div class="modal-overlay" id="addModal">
         <div class="modal-content">
             <h3>Add Transaction</h3>
+
+            <!-- PREMIUM FEATURE: Scan Receipt -->
+            <button class="btn-secondary" style="width: 100%; margin-bottom: 15px; border: 1px solid #1e293b; color: #1e293b;" onclick="triggerFeature('Premium', 'Scan Receipt')">
+                📸 Scan Receipt <span class="badge" style="background:#1e293b; color:white; margin-left:5px;">PREMIUM</span>
+            </button>
+
             <div class="input-group">
                 <label>Type</label>
                 <select id="txType">
@@ -162,6 +174,7 @@
         </div>
     </footer>
 
+    <!-- SIDEBAR DRAWER -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -171,11 +184,23 @@
             </div>
         </div>
         <div class="sidebar-content">
-            <h4>Settings</h4>
+            
+            <h4>Subscription</h4>
+            <li class="menu-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                <label style="font-size: 0.8rem; color: #64748b;">Current Tier</label>
+                <select id="tierSelect" onchange="updateTier()" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Poppins'; outline: none;">
+                    <option value="Free">Free (Basic)</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Gold">Gold (All Access)</option>
+                </select>
+            </li>
+
+            <h4>Features</h4>
             <ul class="feature-menu">
-                <li class="menu-item">Profile</li>
-                <li class="menu-item">Bank Linking <span class="badge gold">GOLD</span></li>
-                <li class="menu-item">RoboAdvisor <span class="badge gold">GOLD</span></li>
+                <li class="menu-item" onclick="triggerFeature('Premium', 'Budget Planning')">Budget Planning <span class="badge" style="background:#1e293b; color:white;">PREM</span></li>
+                <li class="menu-item" onclick="triggerFeature('Gold', 'RoboAdvisor')">RoboAdvisor <span class="badge gold">GOLD</span></li>
+                <li class="menu-item">Misc Notifications</li>
+                <li class="menu-item">About Page</li>
                 <div class="menu-divider"></div>
                 <li class="menu-item" onclick="logout()" style="color: #ef4444;">Logout</li>
             </ul>
