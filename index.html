@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TONIPAID</title>
+    <title>Toni Paid</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,13 +22,10 @@
 </head>
 <body style="background-color: #eef2f5;">
 
-<!-- TOAST NOTIFICATION -->
 <div class="toast" id="appToast">System Message</div>
 
-<!-- AUTHENTICATION SCREEN (LOGIN / SIGNUP) -->
 <div class="login-screen fade-in" id="loginScreen">
     
-    <!-- Login Form -->
     <div id="loginForm" style="width: 100%;">
         <div class="form">
             <p class="title">Login</p>
@@ -49,7 +46,6 @@
         </div>
     </div>
 
-    <!-- Sign Up Form (Hidden by default) -->
     <div id="signupForm" style="display: none; width: 100%;">
         <div class="form">
             <p class="title">Register</p>
@@ -77,11 +73,10 @@
 
 </div>
 
-<!-- MAIN APPLICATION -->
 <div class="app-container fade-out" id="mainApp" style="display: none;">
 
     <header>
-        <div class="logo">TONI<span>PAID</span></div>
+        <div class="logo">Toni<span>Paid</span></div>
         <div class="menu-icon" onclick="openSidebar()">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </div>
@@ -116,7 +111,7 @@
 
                 <div id="bankLinkContainer" style="display: none; margin-top: 15px;">
                     <button style="width: 100%; padding: 12px; border-radius: 12px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39; font-weight: 700; cursor: pointer;" onclick="triggerFeature('Gold', 'Bank Linking')">
-                        Link Bank Account <span class="badge gold">GOLD</span>
+                        🔗 Link Bank Account <span class="badge gold">GOLD</span>
                     </button>
                 </div>
             </div>
@@ -155,7 +150,6 @@
 
     </div>
 
-    <!-- ADD TRANSACTION MODAL -->
     <div class="modal-overlay" id="addModal">
         <div class="modal-content">
             <h3>Add Transaction</h3>
@@ -173,13 +167,7 @@
             </div>
             <div class="input-group">
                 <label>Category</label>
-                <select id="txCategory">
-                    <option value="Food">Food</option>
-                    <option value="Bills">Bills</option>
-                    <option value="Shopping">Shopping</option>
-                    <option value="Fun">Fun</option>
-                    <option value="Transport">Transport</option>
-                </select>
+                <input type="text" id="txCategory" placeholder="e.g. Groceries, Rent, Gas">
             </div>
             <div class="input-group">
                 <label>Amount (₱)</label>
@@ -196,7 +184,6 @@
         </div>
     </div>
 
-    <!-- LIVE CAMERA SCANNER MODAL -->
     <div class="modal-overlay" id="cameraModal">
         <div class="modal-content" style="text-align: center;">
             <h3>Scan Receipt</h3>
@@ -211,7 +198,6 @@
         </div>
     </div>
 
-    <!-- ROBOADVISOR TIPS MODAL -->
     <div class="modal-overlay" id="advisorModal">
         <div class="modal-content">
             <div class="card-title" style="margin-bottom: 15px;">
@@ -227,7 +213,6 @@
         </div>
     </div>
 
-    <!-- ABOUT PAGE MODAL -->
     <div class="modal-overlay" id="aboutModal">
         <div class="modal-content" style="text-align: center;">
             <h1 style="color: #ccaa39; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px;">LifeSav3rs</h1>
@@ -272,7 +257,7 @@
             <h4>Features</h4>
             <ul class="feature-menu">
                 <li class="menu-item" onclick="triggerFeature('Gold', 'Budget Planning')">Budget Planning <span class="badge gold">GOLD</span></li>
-                <li class="menu-item" onclick="triggerFeature('Gold', 'RoboAdvisor')">RoboAdvisor <span class="badge gold">GOLD</span></li>
+                <li class="menu-item" onclick="triggerFeature('Gold', 'RoboAdvisor')">Financial Advisor<span class="badge gold">GOLD</span></li>
                 <li class="menu-item">Misc Notifications</li>
                 <li class="menu-item" onclick="triggerFeature('Free', 'About Page')">About Page</li>
                 <div class="menu-divider"></div>
