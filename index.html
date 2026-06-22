@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toni Paid</title>
+    <title>TONIPAID</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,30 +13,11 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* Smooth Animation Patches */
-        .modal-overlay {
-            display: flex !important; 
-            opacity: 0; 
-            pointer-events: none; 
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.active {
-            opacity: 1; 
-            pointer-events: auto;
-        }
-        #homeView, #historyView {
-            transition: opacity 0.3s ease;
-        }
-        .fade-out {
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            width: 100%;
-        }
-        .fade-in {
-            opacity: 1;
-            position: relative;
-        }
+        .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        #homeView, #historyView { transition: opacity 0.3s ease; }
+        .fade-out { opacity: 0; pointer-events: none; position: absolute; width: 100%; }
+        .fade-in { opacity: 1; position: relative; }
     </style>
 </head>
 <body style="background-color: #eef2f5;">
@@ -44,24 +25,56 @@
 <!-- TOAST NOTIFICATION -->
 <div class="toast" id="appToast">System Message</div>
 
-<!-- LOGIN SCREEN -->
+<!-- AUTHENTICATION SCREEN (LOGIN / SIGNUP) -->
 <div class="login-screen fade-in" id="loginScreen">
-    <div class="login-content">
-        <div class="login-logo">Toni<span>Paid</span></div>
-        <p class="login-subtitle">Manage your finances smartly</p>
-        
-        <div class="input-group">
-            <label>Username</label>
-            <input type="text" id="loginUser" value="Loraine">
+    
+    <!-- Login Form -->
+    <div id="loginForm" style="width: 100%;">
+        <div class="form">
+            <p class="title">Login</p>
+            <p class="message">Welcome back to ToniPaid.</p>
+            
+            <label>
+                <input required="" placeholder="" type="email" class="input" id="loginEmail">
+                <span>Email</span>
+            </label> 
+                
+            <label>
+                <input required="" placeholder="" type="password" class="input" id="loginPassword">
+                <span>Password</span>
+            </label>
+            
+            <button class="submit" onclick="performLogin()">Sign In</button>
+            <p class="signin">Don't have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Register</a></p>
         </div>
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" value="••••••••">
-        </div>
-        
-        <button class="btn-primary login-btn" onclick="performLogin()">Login</button>
-        <div class="login-links">Forgot Password?</div>
     </div>
+
+    <!-- Sign Up Form (Hidden by default) -->
+    <div id="signupForm" style="display: none; width: 100%;">
+        <div class="form">
+            <p class="title">Register</p>
+            <p class="message">Signup now and get full access to our app.</p>
+            
+            <label>
+                <input required="" placeholder="" type="text" class="input" id="signupName">
+                <span>First Name</span>
+            </label>
+            
+            <label>
+                <input required="" placeholder="" type="email" class="input" id="signupEmail">
+                <span>Email</span>
+            </label> 
+                
+            <label>
+                <input required="" placeholder="" type="password" class="input" id="signupPassword">
+                <span>Password</span>
+            </label>
+            
+            <button class="submit" onclick="performSignup()">Create Account</button>
+            <p class="signin">Already have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Login</a></p>
+        </div>
+    </div>
+
 </div>
 
 <!-- MAIN APPLICATION -->
@@ -80,13 +93,12 @@
         </div>
         <div class="user-info">
             <p>Welcome back,</p>
-            <h3 id="welcomeName">Loraine!</h3>
+            <h3 id="welcomeName">User!</h3>
         </div>
     </div>
 
     <div class="main-content">
         
-        <!-- HOME VIEW -->
         <div id="homeView" class="fade-in">
             <div class="balance-card">
                 <div class="card-header">
@@ -114,7 +126,6 @@
             </div>
         </div>
 
-        <!-- HISTORY VIEW -->
         <div id="historyView" class="fade-out">
             <div class="balance-card">
                 <div class="card-header">
@@ -149,7 +160,6 @@
         <div class="modal-content">
             <h3>Add Transaction</h3>
 
-            <!-- GOLD FEATURE: Scan Receipt -->
             <button class="btn-secondary" style="width: 100%; margin-bottom: 15px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39;" onclick="triggerFeature('Gold', 'Scan Receipt')">
                 📸 Scan Receipt <span class="badge gold" style="margin-left:5px;">GOLD</span>
             </button>
@@ -176,8 +186,8 @@
                 <input type="number" id="txAmount" placeholder="0.00" min="1">
             </div>
             <div class="input-group">
-                <label>Date</label>
-                <input type="date" id="txDate">
+                <label>Date & Time (Leave blank for real-time)</label>
+                <input type="datetime-local" id="txDate">
             </div>
             <div class="modal-buttons">
                 <button class="btn-secondary" onclick="closeModal('addModal')">Cancel</button>
@@ -240,7 +250,6 @@
         </div>
     </footer>
 
-    <!-- SIDEBAR DRAWER -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
