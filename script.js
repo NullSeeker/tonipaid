@@ -1,31 +1,20 @@
 let currentWallet = 'cash';
 let currentTier = 'Free'; 
-let registeredUsers = JSON.parse(localStorage.getItem('toniPaidUsers')) || [];
 
+// Database v2: Forces the browser to create a fresh save file, wiping the old ghost categories
+let registeredUsers = JSON.parse(localStorage.getItem('toniPaidUsers_v2')) || [];
+
+// Completely empty default state
 const defaultAppData = {
-    cash: {
-        balance: 5000,
-        expenses: { Food: 1200, Bills: 1500, Shopping: 600, Fun: 200, Transport: 150 },
-        history: [
-            { type: 'in', category: 'Salary', amount: 7650, date: '2026-06-19 09:00 AM' },
-            { type: 'out', category: 'Food', amount: 1200, date: '2026-06-20 12:30 PM' }
-        ]
-    },
-    cashless: {
-        balance: 15240,
-        expenses: { Food: 2765, Bills: 2160, Shopping: 1299, Fun: 249, Transport: 180 },
-        history: [
-            { type: 'out', category: 'Bills', amount: 2160, date: '2026-06-18 08:15 AM' },
-            { type: 'out', category: 'Food', amount: 2765, date: '2026-06-21 07:45 PM' }
-        ]
-    }
+    cash: { balance: 0, expenses: {}, history: [] },
+    cashless: { balance: 0, expenses: {}, history: [] }
 };
 
-let appData = JSON.parse(localStorage.getItem('toniPaidData')) || defaultAppData;
+let appData = JSON.parse(localStorage.getItem('toniPaidData_v2')) || defaultAppData;
 
 function saveLocalData() {
-    localStorage.setItem('toniPaidUsers', JSON.stringify(registeredUsers));
-    localStorage.setItem('toniPaidData', JSON.stringify(appData));
+    localStorage.setItem('toniPaidUsers_v2', JSON.stringify(registeredUsers));
+    localStorage.setItem('toniPaidData_v2', JSON.stringify(appData));
 }
 
 const categoryColors = { Food: '#FF7A00', Bills: '#FFC107', Shopping: '#E91E63', Fun: '#00BFA5', Transport: '#2962FF' };
@@ -79,7 +68,7 @@ function updateUI() {
         legendDiv.innerHTML += `
             <div class="legend-item">
                 <div class="legend-left"><div class="legend-color" style="background:${getCatColor(cat)};"></div> ${cat}</div>
-                <div class="legend-amount">₱${wallet.expenses[cat].toLocaleString()}</div>
+                <div class="legend-amount">₱${wallet.expenses[cat].toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
             </div>`;
     });
 
