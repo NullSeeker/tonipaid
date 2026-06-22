@@ -65,43 +65,6 @@ body {
     height: 840px;
 }
 
-.login-content {
-    width: 100%;
-    padding: 20px 10px;
-}
-
-.login-logo {
-    text-align: center;
-    font-size: 2.2rem;
-    margin-bottom: 8px;
-    font-weight: 900;
-}
-
-.login-logo span { color: #ccaa39; }
-
-.login-subtitle {
-    text-align: center;
-    color: #888888;
-    margin-bottom: 40px;
-    font-size: 0.95rem;
-}
-
-.login-btn { 
-    width: 100%; 
-    margin-top: 20px; 
-    padding: 16px;
-    font-size: 1rem;
-}
-
-.login-links {
-    margin-top: 24px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #ccaa39;
-    cursor: pointer;
-    font-weight: 600;
-}
-
 header {
     display: flex;
     justify-content: space-between;
@@ -387,8 +350,6 @@ footer {
 
 .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
-.close-history-btn { flex: 0; padding: 4px 12px; border-radius: 8px; }
-
 .history-filters { display: flex; gap: 8px; margin-bottom: 12px; }
 
 .filter-btn {
@@ -560,13 +521,143 @@ footer {
     color: #111111; 
 }
 
-.star-bg-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-    overflow: hidden;
-    z-index: -100;
+/* --- UIVERSE SIGN UP & LOGIN FORM (GOLD THEME) --- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+  width: 100%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 20px;
+  position: relative;
+  margin: 0 auto; 
+}
+
+.title {
+  font-size: 28px;
+  color: #ccaa39; 
+  font-weight: 700;
+  letter-spacing: -1px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+  margin-bottom: 5px;
+}
+
+.title::before, .title::after {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  left: 0px;
+  background-color: #ccaa39; 
+}
+
+.title::before {
+  width: 18px;
+  height: 18px;
+  background-color: #ccaa39; 
+}
+
+.title::after {
+  width: 18px;
+  height: 18px;
+  animation: pulse 1s linear infinite;
+}
+
+.message {
+  color: #888888;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.signin {
+  color: #888888;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.signin a {
+  color: #ccaa39; 
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin a:hover {
+  text-decoration: underline #ccaa39; 
+}
+
+.form label {
+  position: relative;
+}
+
+.form label .input {
+  width: 100%;
+  padding: 10px 10px 20px 10px;
+  outline: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  background: #f8fafc;
+}
+
+.form label .input + span {
+  position: absolute;
+  left: 12px;
+  top: 15px;
+  color: #94a3b8;
+  font-size: 0.9em;
+  cursor: text;
+  transition: 0.3s ease;
+  font-weight: 500;
+}
+
+.form label .input:placeholder-shown + span {
+  top: 15px;
+  font-size: 0.9em;
+}
+
+.form label .input:focus + span, .form label .input:valid + span {
+  top: 32px;
+  font-size: 0.7em;
+  font-weight: 700;
+}
+
+.form label .input:valid + span {
+  color: #10b981; 
+}
+
+.submit {
+  border: none;
+  outline: none;
+  background-color: #ccaa39; 
+  padding: 14px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .3s ease;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 10px;
+}
+
+.submit:hover {
+  background-color: #b89832; 
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
 }
