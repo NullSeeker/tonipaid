@@ -11,14 +11,41 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
-</head>
-<body style="background-color: #eef2f5;"> <!-- Restored the clean background -->
 
-<!-- TOAST NOTIFICATION SYSTEM -->
+    <style>
+        /* Smooth Animation Patches */
+        .modal-overlay {
+            display: flex !important; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1; 
+            pointer-events: auto;
+        }
+        #homeView, #historyView {
+            transition: opacity 0.3s ease;
+        }
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+        .fade-in {
+            opacity: 1;
+            position: relative;
+        }
+    </style>
+</head>
+<body style="background-color: #eef2f5;">
+
+<!-- TOAST NOTIFICATION -->
 <div class="toast" id="appToast">System Message</div>
 
 <!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
+<div class="login-screen fade-in" id="loginScreen">
     <div class="login-content">
         <div class="login-logo">Toni<span>Paid</span></div>
         <p class="login-subtitle">Manage your finances smartly</p>
@@ -38,7 +65,7 @@
 </div>
 
 <!-- MAIN APPLICATION -->
-<div class="app-container" id="mainApp" style="display: none;">
+<div class="app-container fade-out" id="mainApp" style="display: none;">
 
     <header>
         <div class="logo">Toni<span>Paid</span></div>
@@ -60,7 +87,7 @@
     <div class="main-content">
         
         <!-- HOME VIEW -->
-        <div id="homeView">
+        <div id="homeView" class="fade-in">
             <div class="balance-card">
                 <div class="card-header">
                     <div class="card-title">
@@ -75,7 +102,6 @@
                     <button class="filter-btn" id="btnCashless" onclick="switchWallet('cashless')">CASHLESS</button>
                 </div>
 
-                <!-- GOLD FEATURE: Bank Linking (Hidden in Cash mode) -->
                 <div id="bankLinkContainer" style="display: none; margin-top: 15px;">
                     <button style="width: 100%; padding: 12px; border-radius: 12px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39; font-weight: 700; cursor: pointer;" onclick="triggerFeature('Gold', 'Bank Linking')">
                         🔗 Link Bank Account <span class="badge gold">GOLD</span>
@@ -89,7 +115,7 @@
         </div>
 
         <!-- HISTORY VIEW -->
-        <div id="historyView" style="display: none;">
+        <div id="historyView" class="fade-out">
             <div class="balance-card">
                 <div class="card-header">
                     <div class="card-title">
@@ -123,9 +149,9 @@
         <div class="modal-content">
             <h3>Add Transaction</h3>
 
-            <!-- PREMIUM FEATURE: Scan Receipt -->
-            <button class="btn-secondary" style="width: 100%; margin-bottom: 15px; border: 1px solid #1e293b; color: #1e293b;" onclick="triggerFeature('Premium', 'Scan Receipt')">
-                📸 Scan Receipt <span class="badge" style="background:#1e293b; color:white; margin-left:5px;">PREMIUM</span>
+            <!-- GOLD FEATURE: Scan Receipt -->
+            <button class="btn-secondary" style="width: 100%; margin-bottom: 15px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39;" onclick="triggerFeature('Gold', 'Scan Receipt')">
+                📸 Scan Receipt <span class="badge gold" style="margin-left:5px;">GOLD</span>
             </button>
 
             <div class="input-group">
@@ -154,9 +180,49 @@
                 <input type="date" id="txDate">
             </div>
             <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-secondary" onclick="closeModal('addModal')">Cancel</button>
                 <button class="btn-primary" onclick="addTransaction()">Save</button>
             </div>
+        </div>
+    </div>
+
+    <!-- LIVE CAMERA SCANNER MODAL -->
+    <div class="modal-overlay" id="cameraModal">
+        <div class="modal-content" style="text-align: center;">
+            <h3>Scan Receipt</h3>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">Align receipt within the frame</p>
+            
+            <video id="cameraFeed" autoplay playsinline style="width: 100%; height: 250px; background: #000; border-radius: 12px; object-fit: cover; margin-bottom: 15px;"></video>
+            
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeCamera()">Cancel</button>
+                <button class="btn-primary" onclick="captureReceipt()">Scan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROBOADVISOR TIPS MODAL -->
+    <div class="modal-overlay" id="advisorModal">
+        <div class="modal-content">
+            <div class="card-title" style="margin-bottom: 15px;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1v2h-1c0 3.87-3.13 7-7 7H9c-3.87 0-7-3.13-7-7H1v-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM9 11a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                <h2>RoboAdvisor Tips</h2>
+            </div>
+            <ul style="font-size: 0.85rem; color: #333; line-height: 1.6; padding-left: 20px; margin-bottom: 20px;">
+                <li style="margin-bottom: 10px;"><strong>The 50/30/20 Rule:</strong> Try to allocate 50% of your income to Needs, 30% to Wants, and 20% to Savings.</li>
+                <li style="margin-bottom: 10px;"><strong>Inflation Reality Check:</strong> Even when national economic indicators show success, everyday struggles with inflation mean personal budgeting and an emergency fund are your strongest defense.</li>
+                <li><strong>Micro-expenses Add Up:</strong> Keep an eye on small, frequent transactions. They drain wallets faster than large purchases.</li>
+            </ul>
+            <button class="btn-primary" style="width: 100%;" onclick="closeModal('advisorModal')">Got it!</button>
+        </div>
+    </div>
+
+    <!-- ABOUT PAGE MODAL -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal-content" style="text-align: center;">
+            <h1 style="color: #ccaa39; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px;">LifeSav3rs</h1>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Version 1.0.0<br>Empowering your financial journey, one smart choice at a time.</p>
+            <button class="btn-secondary" style="width: 100%;" onclick="closeModal('aboutModal')">Close</button>
         </div>
     </div>
 
@@ -165,7 +231,7 @@
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
             <span>Home</span>
         </div>
-        <div class="nav-fab" onclick="openModal()">
+        <div class="nav-fab" onclick="openModal('addModal')">
             <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
         <div class="nav-icon" onclick="switchView('history')" id="navHistory">
@@ -190,17 +256,16 @@
                 <label style="font-size: 0.8rem; color: #64748b;">Current Tier</label>
                 <select id="tierSelect" onchange="updateTier()" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Poppins'; outline: none;">
                     <option value="Free">Free (Basic)</option>
-                    <option value="Premium">Premium</option>
                     <option value="Gold">Gold (All Access)</option>
                 </select>
             </li>
 
             <h4>Features</h4>
             <ul class="feature-menu">
-                <li class="menu-item" onclick="triggerFeature('Premium', 'Budget Planning')">Budget Planning <span class="badge" style="background:#1e293b; color:white;">PREM</span></li>
+                <li class="menu-item" onclick="triggerFeature('Gold', 'Budget Planning')">Budget Planning <span class="badge gold">GOLD</span></li>
                 <li class="menu-item" onclick="triggerFeature('Gold', 'RoboAdvisor')">RoboAdvisor <span class="badge gold">GOLD</span></li>
                 <li class="menu-item">Misc Notifications</li>
-                <li class="menu-item">About Page</li>
+                <li class="menu-item" onclick="triggerFeature('Free', 'About Page')">About Page</li>
                 <div class="menu-divider"></div>
                 <li class="menu-item" onclick="logout()" style="color: #ef4444;">Logout</li>
             </ul>
