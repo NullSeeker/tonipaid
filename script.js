@@ -1,11 +1,8 @@
 let currentWallet = 'cash';
 let currentTier = 'Free'; 
+let registeredUsers = JSON.parse(localStorage.getItem('toniPaidUsers')) || [];
 
-// --- USER AUTHENTICATION DATABASE ---
-const registeredUsers = []; // Stores all accounts created during the session
-
-// --- FINANCIAL DATABASE ---
-const appData = {
+const defaultAppData = {
     cash: {
         balance: 5000,
         expenses: { Food: 1200, Bills: 1500, Shopping: 600, Fun: 200, Transport: 150 },
@@ -24,9 +21,14 @@ const appData = {
     }
 };
 
-const categoryColors = { Food: '#FF7A00', Bills: '#FFC107', Shopping: '#E91E63', Fun: '#00BFA5', Transport: '#2962FF' };
+let appData = JSON.parse(localStorage.getItem('toniPaidData')) || defaultAppData;
 
-// --- CHART INITIALIZATION ---
+function saveLocalData() {
+    localStorage.setItem('toniPaidUsers', JSON.stringify(registeredUsers));
+    localStorage.setItem('toniPaidData', JSON.stringify(appData));
+}
+
+const categoryColors = { Food: '#FF7A00', Bills: '#FFC107', Shopping: '#E91E63', Fun: '#00BFA5', Transport: '#2962FF' };
 let chart;
 const ctx = document.getElementById('expenseChart').getContext('2d');
 
@@ -38,7 +40,6 @@ function initChart() {
     });
 }
 
-// --- UI UPDATER ---
 function updateUI() {
     const wallet = appData[currentWallet];
     
@@ -87,8 +88,6 @@ function updateUI() {
     });
 }
 
-// --- VIEW & ANIMATION CONTROLS ---
-
 function switchWallet(type) {
     currentWallet = type;
     document.getElementById('btnCash').className = type === 'cash' ? 'filter-btn active' : 'filter-btn';
@@ -132,8 +131,6 @@ function closeSidebar() {
     document.getElementById('sidebarOverlay').classList.remove('active');
 }
 
-// --- AUTHENTICATION FLOW ---
-
 function toggleAuthMode() {
     const login = document.getElementById('loginForm');
     const signup = document.getElementById('signupForm');
@@ -156,17 +153,16 @@ function performSignup() {
         return;
     }
     
-    // Check if user already exists
     if (registeredUsers.find(u => u.email === email)) {
         showToast("An account with this email already exists!");
         return;
     }
     
-    // Save to database
     registeredUsers.push({ name, email, pass });
+    saveLocalData(); 
+    
     showToast("Account created! You can now login.");
     
-    // Clear form and switch to login
     document.getElementById('signupName').value = '';
     document.getElementById('signupEmail').value = '';
     document.getElementById('signupPassword').value = '';
@@ -177,7 +173,6 @@ function performLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPassword').value;
 
-    // Authenticate against database
     const user = registeredUsers.find(u => u.email === email && u.pass === pass);
     
     if (!user) {
@@ -185,7 +180,6 @@ function performLogin() {
         return;
     }
 
-    // Success
     document.getElementById('welcomeName').innerText = user.name + '!';
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
@@ -196,7 +190,6 @@ function performLogin() {
 function logout() {
     document.getElementById('mainApp').className = 'app-container fade-out';
     
-    // Clear login fields to protect privacy
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     
@@ -207,8 +200,6 @@ function logout() {
         switchView('home');
     }, 300);
 }
-
-// --- TIER & FEATURE LOGIC ---
 
 function showToast(msg) {
     const toast = document.getElementById('appToast');
@@ -241,8 +232,6 @@ function triggerFeature(requiredTier, featureName) {
         showToast(`🔒 Locked. ${featureName} requires ${requiredTier} access.`);
     }
 }
-
-// --- LIVE CAMERA LOGIC ---
 
 let cameraStream;
 
@@ -281,8 +270,6 @@ function captureReceipt() {
     }, 1500);
 }
 
-// --- TRANSACTION LOGIC ---
-
 function addTransaction() {
     const type = document.getElementById('txType').value;
     const category = document.getElementById('txCategory').value;
@@ -291,14 +278,12 @@ function addTransaction() {
 
     if (!amount || amount <= 0) { alert("Please input a valid amount."); return; }
 
-    // REAL-TIME FALLBACK: If user left date blank, generate exact current date & time
     if (!dateInput) {
         const now = new Date();
         const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const dateString = now.toISOString().split('T')[0];
         dateInput = `${dateString} ${timeString}`;
     } else {
-        // Format the datetime-local input cleanly if they selected one
         dateInput = dateInput.replace('T', ' '); 
     }
 
@@ -313,7 +298,8 @@ function addTransaction() {
         wallet.history.push({ type, category, amount, date: dateInput });
     }
 
-    // Clear form
+    saveLocalData();
+
     document.getElementById('txAmount').value = '';
     document.getElementById('txDate').value = '';
     closeModal('addModal');
