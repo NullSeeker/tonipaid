@@ -29,6 +29,17 @@ function saveLocalData() {
 }
 
 const categoryColors = { Food: '#FF7A00', Bills: '#FFC107', Shopping: '#E91E63', Fun: '#00BFA5', Transport: '#2962FF' };
+const fallbackColors = ['#9C27B0', '#673AB7', '#3F51B5', '#00BCD4', '#8BC34A', '#CDDC39', '#FFEB3B', '#FF9800', '#795548', '#607D8B'];
+
+function getCatColor(cat) {
+    if (categoryColors[cat]) return categoryColors[cat];
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+    const index = Math.abs(hash) % fallbackColors.length;
+    categoryColors[cat] = fallbackColors[index];
+    return fallbackColors[index];
+}
+
 let chart;
 const ctx = document.getElementById('expenseChart').getContext('2d');
 
@@ -59,7 +70,7 @@ function updateUI() {
 
     chart.data.labels = categories;
     chart.data.datasets[0].data = values;
-    chart.data.datasets[0].backgroundColor = categories.map(cat => categoryColors[cat]);
+    chart.data.datasets[0].backgroundColor = categories.map(cat => getCatColor(cat));
     chart.update();
 
     const legendDiv = document.getElementById('chartLegend');
@@ -67,7 +78,7 @@ function updateUI() {
     categories.forEach(cat => {
         legendDiv.innerHTML += `
             <div class="legend-item">
-                <div class="legend-left"><div class="legend-color" style="background:${categoryColors[cat]};"></div> ${cat}</div>
+                <div class="legend-left"><div class="legend-color" style="background:${getCatColor(cat)};"></div> ${cat}</div>
                 <div class="legend-amount">₱${wallet.expenses[cat].toLocaleString()}</div>
             </div>`;
     });
@@ -272,11 +283,14 @@ function captureReceipt() {
 
 function addTransaction() {
     const type = document.getElementById('txType').value;
-    const category = document.getElementById('txCategory').value;
+    let category = document.getElementById('txCategory').value.trim();
     const amount = parseFloat(document.getElementById('txAmount').value);
     let dateInput = document.getElementById('txDate').value;
 
+    if (!category) { alert("Please enter a category."); return; }
     if (!amount || amount <= 0) { alert("Please input a valid amount."); return; }
+    
+    category = category.charAt(0).toUpperCase() + category.slice(1);
 
     if (!dateInput) {
         const now = new Date();
@@ -300,6 +314,7 @@ function addTransaction() {
 
     saveLocalData();
 
+    document.getElementById('txCategory').value = '';
     document.getElementById('txAmount').value = '';
     document.getElementById('txDate').value = '';
     closeModal('addModal');
