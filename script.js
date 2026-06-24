@@ -229,7 +229,7 @@ function triggerFeature(requiredTier, featureName) {
             showToast(`Launching ${featureName}...`);
         }
     } else {
-        showToast(`Locked. ${featureName} requires ${requiredTier} access.`);
+        showToast(`${featureName} requires ${requiredTier} access.`);
     }
 }
 
