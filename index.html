@@ -12,35 +12,31 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 
- <style>
-    .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-    .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .fade-out { display: none !important; }
-    .fade-in { display: flex !important; animation: fadeIn 0.2s ease forwards; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
+    <style>
+        .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .fade-out { display: none !important; }
+        .fade-in { display: flex !important; animation: fadeIn 0.2s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
 </head>
 <body>
 
 <div class="toast" id="appToast">System Message</div>
 
 <div class="login-screen fade-in" id="loginScreen">
-    
     <div id="loginForm" style="width: 100%;">
         <div class="form">
             <p class="title">Login</p>
             <p class="message">Welcome back to ToniPaid.</p>
-            
             <label>
                 <input required="" placeholder="" type="email" class="input" id="loginEmail">
                 <span>Email</span>
             </label> 
-                
             <label>
                 <input required="" placeholder="" type="password" class="input" id="loginPassword">
                 <span>Password</span>
             </label>
-            
             <button class="submit" onclick="performLogin()">Sign In</button>
             <p class="signin">Don't have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Register</a></p>
         </div>
@@ -50,30 +46,25 @@
         <div class="form">
             <p class="title">Register</p>
             <p class="message">Signup now and get full access to our app.</p>
-            
             <label>
                 <input required="" placeholder="" type="text" class="input" id="signupName">
                 <span>First Name</span>
             </label>
-            
             <label>
                 <input required="" placeholder="" type="email" class="input" id="signupEmail">
                 <span>Email</span>
             </label> 
-                
             <label>
                 <input required="" placeholder="" type="password" class="input" id="signupPassword">
                 <span>Password</span>
             </label>
-            
             <button class="submit" onclick="performSignup()">Create Account</button>
             <p class="signin">Already have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Login</a></p>
         </div>
     </div>
-
 </div>
 
-<div class="app-container fade-out" id="mainApp" style="display: none;">
+<div class="app-container fade-out" id="mainApp">
 
     <header>
         <div class="logo">Toni<span>Paid</span></div>
@@ -82,7 +73,7 @@
         </div>
     </header>
 
-    <div class="user-card">
+    <div class="user-card shrink-0">
         <div class="user-avatar">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
@@ -94,15 +85,15 @@
 
     <div class="main-content">
         
-        <div id="homeView" class="fade-in">
-            <div class="balance-card">
+        <div id="homeView" class="fade-in" style="flex-direction: column;">
+            <div class="balance-card shrink-0">
                 <div class="card-header">
                     <div class="card-title">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
                         <h2 id="walletLabel">Cash Wallet</h2>
                     </div>
                 </div>
-                <h2 class="balance-text" id="walletBalance">₱ 0.00</h2>
+                <h2 class="balance-text" id="walletBalance">0.00</h2>
                 
                 <div class="history-filters" style="margin-top: 15px;">
                     <button class="filter-btn active" id="btnCash" onclick="switchWallet('cash')">CASH</button>
@@ -117,13 +108,13 @@
                 </div>
             </div>
             
-            <div class="emergency-fund-alert">
+            <div class="emergency-fund-alert shrink-0">
                 Log your daily expenses to keep your chart updated.
             </div>
         </div>
 
-        <div id="historyView" class="fade-out">
-            <div class="balance-card">
+        <div id="historyView" class="fade-out" style="flex-direction: column; height: 100%;">
+            <div class="balance-card shrink-0">
                 <div class="card-header">
                     <div class="card-title">
                         <h2>Distribution</h2>
@@ -141,8 +132,8 @@
                 </div>
             </div>
 
-            <div class="balance-card history-content">
-                <div class="history-header">
+            <div class="balance-card history-content" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 90px;">
+                <div class="history-header shrink-0">
                     <h3>Recent Logs</h3>
                 </div>
                 <div class="transaction-list" id="txHistory"></div>
@@ -151,7 +142,6 @@
 
     </div>
 
-    <!-- ADD TRANSACTION MODAL -->
     <div class="modal-overlay" id="addModal">
         <div class="modal-content">
             <h3>Add Transaction</h3>
@@ -175,14 +165,14 @@
             </div>
             <div class="input-group">
                 <label>Category</label>
-                <input type="text" id="txCategory" placeholder="e.g. Groceries, Rent, Gas">
+                <input type="text" id="txCategory" placeholder="Food, Rent, Gas">
             </div>
             <div class="input-group">
-                <label>Amount (₱)</label>
+                <label>Amount</label>
                 <input type="number" id="txAmount" placeholder="0.00" min="1">
             </div>
             <div class="input-group">
-                <label>Date & Time (Leave blank for real-time)</label>
+                <label>Date & Time</label>
                 <input type="datetime-local" id="txDate">
             </div>
             <div class="modal-buttons">
@@ -192,7 +182,6 @@
         </div>
     </div>
 
-    <!-- LIVE CAMERA SCANNER MODAL -->
     <div class="modal-overlay" id="cameraModal">
         <div class="modal-content" style="text-align: center;">
             <h3>Scan Receipt</h3>
@@ -208,47 +197,44 @@
         </div>
     </div>
 
-    <!-- RECEIPT GALLERY MODAL -->
     <div class="modal-overlay" id="galleryModal">
         <div class="modal-content modal-tall">
-            <div class="card-title" style="margin-bottom: 15px;">
+            <div class="card-title shrink-0" style="margin-bottom: 15px;">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                 <h2>Receipt Gallery</h2>
             </div>
-            <p class="modal-subtitle">All your scanned receipts are saved here.</p>
+            <p class="modal-subtitle shrink-0">All your scanned receipts are saved here.</p>
             
             <div id="receiptGrid" class="grid-layout"></div>
             
-            <div class="modal-buttons mt-auto">
+            <div class="modal-buttons mt-auto shrink-0">
                 <button class="btn-secondary full-width" onclick="closeModal('galleryModal')">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- BUDGET PLANNER MODAL -->
     <div class="modal-overlay" id="budgetModal">
         <div class="modal-content modal-tall">
-            <div class="card-title" style="margin-bottom: 5px;">
+            <div class="card-title shrink-0" style="margin-bottom: 5px;">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
                 <h2>Budget Planner <span class="badge gold">GOLD</span></h2>
             </div>
-            <p class="modal-subtitle">Set monthly limits for your <span id="budgetWalletLabel" class="font-bold">Cash</span> wallet categories.</p>
+            <p class="modal-subtitle shrink-0">Set monthly limits for your <span id="budgetWalletLabel" class="font-bold">Cash</span> wallet.</p>
             
             <div id="budgetList" class="scroll-list"></div>
             
-            <div class="modal-buttons mt-auto">
+            <div class="modal-buttons mt-auto shrink-0">
                 <button class="btn-secondary" onclick="closeModal('budgetModal')">Close</button>
                 <button class="btn-primary" onclick="saveBudgets()">Save Limits</button>
             </div>
         </div>
     </div>
 
-    <!-- ROBOADVISOR TIPS MODAL -->
     <div class="modal-overlay" id="advisorModal">
         <div class="modal-content">
             <div class="card-title" style="margin-bottom: 15px;">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1v2h-1c0 3.87-3.13 7-7 7H9c-3.87 0-7-3.13-7-7H1v-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM9 11a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
-                <h2>Financial Advisor Tips</h2>
+                <h2>RoboAdvisor Tips</h2>
             </div>
             <ul class="text-list">
                 <li><strong>The 50/30/20 Rule:</strong> Allocate 50% of your income to Needs, 30% to Wants, and 20% to Savings.</li>
@@ -259,11 +245,10 @@
         </div>
     </div>
 
-    <!-- ABOUT PAGE MODAL -->
     <div class="modal-overlay" id="aboutModal">
         <div class="modal-content center-text">
             <h1 class="brand-title">LifeSav3rs</h1>
-            <p class="modal-subtitle mb-lg">Version 1.0.5<br>Empowering your financial journey, one smart choice at a time.</p>
+            <p class="modal-subtitle mb-lg">Version 1.0.0<br>Empowering your financial journey, one smart choice at a time.</p>
             <button class="btn-secondary full-width" onclick="closeModal('aboutModal')">Close</button>
         </div>
     </div>
