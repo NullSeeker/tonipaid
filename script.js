@@ -173,18 +173,22 @@ function performLogin() {
     }
 
     document.getElementById('welcomeName').innerText = user.name + '!';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'flex';
+    
+    // Fix: Swap classes instead of using inline styles
+    document.getElementById('loginScreen').className = 'login-screen fade-out';
     document.getElementById('mainApp').className = 'app-container fade-in';
+    
     updateUI();
 }
 
 function logout() {
+    // Fix: Swap classes instead of using inline styles
     document.getElementById('mainApp').className = 'app-container fade-out';
+    document.getElementById('loginScreen').className = 'login-screen fade-in';
+    
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
+    
     closeSidebar();
     switchView('home');
 }
