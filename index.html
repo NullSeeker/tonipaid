@@ -12,13 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 
-    <style>
-        .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        #homeView, #historyView { transition: opacity 0.2s ease; }
-        .fade-out { opacity: 0; pointer-events: none; position: absolute; width: 100%; }
-        .fade-in { opacity: 1; position: relative; }
-    </style>
+ <style>
+    .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .fade-out { display: none !important; }
+    .fade-in { display: flex !important; animation: fadeIn 0.2s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
 </head>
 <body>
 
