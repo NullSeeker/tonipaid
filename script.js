@@ -44,7 +44,7 @@ function updateUI() {
     const wallet = appData[currentWallet];
     
     document.getElementById('walletLabel').innerText = currentWallet === 'cash' ? 'Cash Wallet' : 'Cashless Wallet';
-    document.getElementById('walletBalance').innerText = `₱ ${wallet.balance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    document.getElementById('walletBalance').innerText = wallet.balance.toLocaleString('en-US', {minimumFractionDigits: 2});
 
     const categories = Object.keys(wallet.expenses);
     const values = Object.values(wallet.expenses);
@@ -67,7 +67,7 @@ function updateUI() {
         legendDiv.innerHTML += `
             <div class="legend-item">
                 <div class="legend-left"><div class="legend-color" style="background:${getCatColor(cat)};"></div> ${cat}</div>
-                <div class="legend-amount">₱${wallet.expenses[cat].toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                <div class="legend-amount">${wallet.expenses[cat].toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
             </div>`;
     });
 
@@ -82,7 +82,7 @@ function updateUI() {
                     <h5>${item.category}</h5>
                     <p>${item.date}</p>
                 </div>
-                <div class="tx-amount ${cssClass}">${sign}₱${item.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                <div class="tx-amount ${cssClass}">${sign}${item.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
             </div>`;
     });
 }
@@ -101,13 +101,11 @@ function switchView(view) {
     
     if(view === 'home') {
         history.className = 'fade-out';
-        setTimeout(() => home.className = 'fade-in', 200);
+        home.className = 'fade-in';
     } else {
         home.className = 'fade-out';
-        setTimeout(() => {
-            history.className = 'fade-in';
-            chart.update();
-        }, 200);
+        history.className = 'fade-in';
+        chart.update();
     }
     
     document.getElementById('navHome').style.color = view === 'home' ? '#111111' : '#94a3b8';
@@ -177,7 +175,7 @@ function performLogin() {
     document.getElementById('welcomeName').innerText = user.name + '!';
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
-    setTimeout(() => document.getElementById('mainApp').className = 'app-container fade-in', 50);
+    document.getElementById('mainApp').className = 'app-container fade-in';
     updateUI();
 }
 
@@ -185,12 +183,10 @@ function logout() {
     document.getElementById('mainApp').className = 'app-container fade-out';
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
-    setTimeout(() => {
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-        closeSidebar();
-        switchView('home');
-    }, 200);
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    closeSidebar();
+    switchView('home');
 }
 
 function showToast(msg) {
@@ -215,7 +211,7 @@ function triggerFeature(requiredTier, featureName) {
             closeSidebar();
             renderBudgets();
             openModal('budgetModal');
-        } else if (featureName === 'Financial Advisor') {
+        } else if (featureName === 'RoboAdvisor') {
             closeSidebar();
             openModal('advisorModal');
         } else if (featureName === 'About Page') {
@@ -259,7 +255,7 @@ function renderBudgets() {
                     </div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #64748b;">
-                    <span>Spent: ₱${spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    <span>Spent: ${spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
                 </div>
                 <div style="width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden;">
                     <div style="width: ${percent}%; height: 100%; background: ${spent > limit && limit > 0 ? '#ef4444' : color}; transition: width 0.3s ease;"></div>
@@ -338,7 +334,7 @@ function openGallery() {
                     <img src="${receipt.image}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; background: #e2e8f0;">
                     <div style="padding: 8px 4px 4px 4px;">
                         <p style="font-size: 0.75rem; font-weight: 600; color: #1e293b; margin:0; text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${receipt.category}</p>
-                        <p style="font-size: 0.7rem; color: #64748b; margin:0;">₱${receipt.amount.toLocaleString()}</p>
+                        <p style="font-size: 0.7rem; color: #64748b; margin:0;">${receipt.amount.toLocaleString()}</p>
                         <p style="font-size: 0.6rem; color: #94a3b8; margin:4px 0 0 0;">${receipt.date.split(' ')[0]}</p>
                     </div>
                 </div>
