@@ -25,58 +25,48 @@
 <div class="toast" id="appToast">System Message</div>
 
 <div class="login-screen fade-in" id="loginScreen">
-    
     <div id="loginForm" style="width: 100%;">
         <div class="form">
             <p class="title">Login</p>
             <p class="message">Welcome back to ToniPaid.</p>
-            
             <label>
                 <input required="" placeholder="" type="email" class="input" id="loginEmail">
                 <span>Email</span>
             </label> 
-                
             <label>
                 <input required="" placeholder="" type="password" class="input" id="loginPassword">
                 <span>Password</span>
             </label>
-            
             <button class="submit" onclick="performLogin()">Sign In</button>
             <p class="signin">Don't have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Register</a></p>
         </div>
     </div>
-
     <div id="signupForm" style="display: none; width: 100%;">
         <div class="form">
             <p class="title">Register</p>
             <p class="message">Signup now and get full access to our app.</p>
-            
             <label>
                 <input required="" placeholder="" type="text" class="input" id="signupName">
                 <span>First Name</span>
             </label>
-            
             <label>
                 <input required="" placeholder="" type="email" class="input" id="signupEmail">
                 <span>Email</span>
             </label> 
-                
             <label>
                 <input required="" placeholder="" type="password" class="input" id="signupPassword">
                 <span>Password</span>
             </label>
-            
             <button class="submit" onclick="performSignup()">Create Account</button>
             <p class="signin">Already have an account? <a href="javascript:void(0);" onclick="toggleAuthMode()">Login</a></p>
         </div>
     </div>
-
 </div>
 
 <div class="app-container fade-out" id="mainApp" style="display: none;">
 
     <header>
-        <div class="logo">TONI<span>PAID</span></div>
+        <div class="logo">Toni<span>Paid</span></div>
         <div class="menu-icon" onclick="openSidebar()">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </div>
@@ -111,13 +101,13 @@
 
                 <div id="bankLinkContainer" style="display: none; margin-top: 15px;">
                     <button style="width: 100%; padding: 12px; border-radius: 12px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39; font-weight: 700; cursor: pointer;" onclick="triggerFeature('Gold', 'Bank Linking')">
-                        Link Bank Account <span class="badge gold">GOLD</span>
+                        🔗 Link Bank Account <span class="badge gold">GOLD</span>
                     </button>
                 </div>
             </div>
             
             <div class="emergency-fund-alert">
-                Log your daily expenses to keep your chart updated!
+                💡 Log your daily expenses to keep your chart updated!
             </div>
         </div>
 
@@ -150,19 +140,23 @@
 
     </div>
 
+    <!-- ADD TRANSACTION MODAL -->
     <div class="modal-overlay" id="addModal">
         <div class="modal-content">
             <h3>Add Transaction</h3>
 
             <button class="btn-secondary" style="width: 100%; margin-bottom: 15px; border: 1px dashed #e3c153; background: #fffdf0; color: #ccaa39;" onclick="triggerFeature('Gold', 'Scan Receipt')">
-                Scan Receipt <span class="badge gold" style="margin-left:5px;">GOLD</span>
+                📸 Scan Receipt <span class="badge gold" style="margin-left:5px;">GOLD</span>
             </button>
+
+            <!-- Small indicator to show receipt is attached -->
+            <p id="receiptAttachedIndicator" style="display: none; font-size: 0.75rem; color: #10b981; text-align: center; margin-bottom: 10px; font-weight: 600;">✅ Receipt image attached</p>
 
             <div class="input-group">
                 <label>Type</label>
                 <select id="txType">
-                    <option value="out">Expense</option>
-                    <option value="in">Income</option>
+                    <option value="out">Expense (Money Out)</option>
+                    <option value="in">Income (Money In)</option>
                 </select>
             </div>
             <div class="input-group">
@@ -184,6 +178,7 @@
         </div>
     </div>
 
+    <!-- LIVE CAMERA SCANNER MODAL -->
     <div class="modal-overlay" id="cameraModal">
         <div class="modal-content" style="text-align: center;">
             <h3>Scan Receipt</h3>
@@ -191,28 +186,72 @@
             
             <video id="cameraFeed" autoplay playsinline style="width: 100%; height: 250px; background: #000; border-radius: 12px; object-fit: cover; margin-bottom: 15px;"></video>
             
+            <!-- Hidden canvas used to process the video frame into an image file -->
+            <canvas id="snapshotCanvas" style="display: none;"></canvas>
+
             <div class="modal-buttons">
                 <button class="btn-secondary" onclick="closeCamera()">Cancel</button>
-                <button class="btn-primary" onclick="captureReceipt()">Scan</button>
+                <button class="btn-primary" onclick="captureReceipt()">Snap & Scan</button>
             </div>
         </div>
     </div>
 
+    <!-- RECEIPT GALLERY MODAL -->
+    <div class="modal-overlay" id="galleryModal">
+        <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="card-title" style="margin-bottom: 15px;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <h2>Receipt Gallery</h2>
+            </div>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">All your scanned receipts are saved here.</p>
+            
+            <div id="receiptGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; padding-right: 5px; flex-grow: 1;">
+                <!-- JavaScript will populate the gallery here -->
+            </div>
+            
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button class="btn-secondary" style="width: 100%;" onclick="closeModal('galleryModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUDGET PLANNER MODAL -->
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="card-title" style="margin-bottom: 5px;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                <h2>Budget Planner <span class="badge gold" style="margin-left:5px;">GOLD</span></h2>
+            </div>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Set monthly limits for your <span id="budgetWalletLabel" style="font-weight:bold;">Cash</span> wallet categories.</p>
+            
+            <div id="budgetList" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; overflow-y: auto; padding-right: 5px;">
+                <!-- JS will generate progress bars and inputs here -->
+            </div>
+            
+            <div class="modal-buttons" style="margin-top: auto;">
+                <button class="btn-secondary" onclick="closeModal('budgetModal')">Close</button>
+                <button class="btn-primary" onclick="saveBudgets()">Save Limits</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROBOADVISOR TIPS MODAL -->
     <div class="modal-overlay" id="advisorModal">
         <div class="modal-content">
             <div class="card-title" style="margin-bottom: 15px;">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1v2h-1c0 3.87-3.13 7-7 7H9c-3.87 0-7-3.13-7-7H1v-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM9 11a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
-                <h2>Financial Advisor</h2>
+                <h2>RoboAdvisor Tips</h2>
             </div>
             <ul style="font-size: 0.85rem; color: #333; line-height: 1.6; padding-left: 20px; margin-bottom: 20px;">
                 <li style="margin-bottom: 10px;"><strong>The 50/30/20 Rule:</strong> Try to allocate 50% of your income to Needs, 30% to Wants, and 20% to Savings.</li>
                 <li style="margin-bottom: 10px;"><strong>Inflation Reality Check:</strong> Even when national economic indicators show success, everyday struggles with inflation mean personal budgeting and an emergency fund are your strongest defense.</li>
-                <li><strong>Small expenses Add Up:</strong> Keep an eye on small, frequent transactions. They drain wallets faster than large purchases.</li>
+                <li><strong>Micro-expenses Add Up:</strong> Keep an eye on small, frequent transactions. They drain wallets faster than large purchases.</li>
             </ul>
             <button class="btn-primary" style="width: 100%;" onclick="closeModal('advisorModal')">Got it!</button>
         </div>
     </div>
 
+    <!-- ABOUT PAGE MODAL -->
     <div class="modal-overlay" id="aboutModal">
         <div class="modal-content" style="text-align: center;">
             <h1 style="color: #ccaa39; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px;">LifeSav3rs</h1>
@@ -257,7 +296,9 @@
             <h4>Features</h4>
             <ul class="feature-menu">
                 <li class="menu-item" onclick="triggerFeature('Gold', 'Budget Planning')">Budget Planning <span class="badge gold">GOLD</span></li>
-                <li class="menu-item" onclick="triggerFeature('Gold', 'Financial Advisor')">Financial Advisor<span class="badge gold">GOLD</span></li>
+                <li class="menu-item" onclick="openGallery()">Receipt Gallery</li>
+                <li class="menu-item" onclick="triggerFeature('Gold', 'RoboAdvisor')">RoboAdvisor <span class="badge gold">GOLD</span></li>
+                <li class="menu-item">Misc Notifications</li>
                 <li class="menu-item" onclick="triggerFeature('Free', 'About Page')">About Page</li>
                 <div class="menu-divider"></div>
                 <li class="menu-item" onclick="logout()" style="color: #ef4444;">Logout</li>
