@@ -13,11 +13,25 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        .modal-overlay { display: flex !important; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .fade-out { display: none !important; }
-        .fade-in { display: flex !important; animation: fadeIn 0.2s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+       .modal-overlay { 
+        position: absolute; /* Detaches from the flex flow */
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0, 0, 0, 0.4); /* Adds a dark backdrop behind modals */
+        display: flex !important; 
+        justify-content: center; /* Centers the modal box horizontally */
+        align-items: center;     /* Centers the modal box vertically */
+        z-index: 2000;           /* Places it over the footer but under sidebars/toasts */
+        opacity: 0; 
+        pointer-events: none; 
+        transition: opacity 0.2s ease; 
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .fade-out { display: none !important; }
+    .fade-in { display: flex !important; animation: fadeIn 0.2s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
